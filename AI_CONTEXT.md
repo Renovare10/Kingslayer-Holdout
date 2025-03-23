@@ -14,9 +14,9 @@ I’m working on a Phaser 3 game called "kingslayer-holdout" using Vite as the b
     - `RotateToMouse.js`: `createRotateToMouse()` returns `{ enabled: true }`.
     - `Movement.js`: `createMovement(speed, type)` returns `{ speed, velocity: { x, y }, type }`.
   - `src/systems/`:
-    - `RenderSystem.js`: Creates/updates sprites (`initEntity`, `update` syncs `x/y`).
-    - `RotateToMouseSystem.js`: Rotates player to mouse (`update`).
-    - `PlayerMovementSystem.js`: Moves player with WASD (`update`).
+    - `RenderSystem.js`: Creates/updates sprites (`initEntity(ecs)`, `update(ecs)` syncs `x/y`).
+    - `RotateToMouseSystem.js`: Rotates player to mouse (`update(ecs)`).
+    - `PlayerMovementSystem.js`: Moves player with WASD (`update(ecs)`).
   - `src/entities/`:
     - `Player.js`: `createPlayer(ecs, scene, x, y)` builds player with all components.
   - `src/utils/`:
@@ -32,7 +32,7 @@ I’m working on a Phaser 3 game called "kingslayer-holdout" using Vite as the b
 
 - **Methodology**:
   - ECS: Entities are IDs, components are data, systems handle logic.
-  - Key ECS Functions: `ecs.createEntity()`, `ecs.addComponent(id, name, data)`, `ecs.getComponent(id, name)`, `ecs.addSystem(system)`, `ecs.update()` (passes `this`).
+  - Key ECS Functions: `ecs.createEntity()`, `ecs.addComponent(id, name, data)`, `ecs.getComponent(id, name)`, `ecs.addSystem(system)`, `ecs.update(ecs)` (passes `this`), `ecs.initEntity(id, ecs)` (passes `this`).
   - Separation: Logic in systems/utils, scenes stay lean, one concept per file.
   - Modern JS: ES6+ with named/default exports, factory functions or classes for components.
 
