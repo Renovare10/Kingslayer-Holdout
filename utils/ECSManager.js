@@ -16,6 +16,7 @@ export default class ECSManager {
           this.components.set(entityId, {});
       }
       this.components.get(entityId)[componentName] = componentData;
+      this.initEntity(entityId);
   }
 
   getComponent(entityId, componentName) {
@@ -28,5 +29,13 @@ export default class ECSManager {
 
   update() {
       this.systems.forEach(system => system.update(this.entities, this.components));
+  }
+
+  initEntity(entityId) {
+    this.systems.forEach(system => {
+        if (system.initEntity) {
+            system.initEntity(entityId, this.entities, this.components);
+        }
+    });
   }
 }

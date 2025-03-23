@@ -15,12 +15,9 @@ export default class MainScene extends Phaser.Scene {
       this.cameras.main.setBackgroundColor('#E7C8A2');
 
       createAnimations(this);
-      const renderSystem = new RenderSystem(this);
-      this.ecs.addSystem(renderSystem);
+      this.ecs.addSystem(new RenderSystem(this));
       const playerId = createPlayer(this.ecs, this, 400, 400);
 
-      // Force initial render
-      renderSystem.init(this.ecs.entities, this.ecs.components);
       const playerSprite = this.ecs.getComponent(playerId, 'sprite').phaserSprite;
       playerSprite.play('idle');
     }

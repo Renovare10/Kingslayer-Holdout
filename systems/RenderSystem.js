@@ -12,7 +12,10 @@ export default class RenderSystem {
       });
     }
 
-      init(entities, components) {
-        this.update(entities, components);
+    initEntity(entityId, entities, components) {
+        const { position, sprite } = components.get(entityId) || {};
+        if (position && sprite && !sprite.phaserSprite) {
+            sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
+        }
     }
 }
