@@ -34,7 +34,7 @@ export default class ECSManager {
     initEntity(entityId) {
       this.systems.forEach(system => {
         if (system.initEntity) {
-          system.initEntity(entityId, this.entities, this.components);
+          system.initEntity(entityId, this); // Changed to pass this
         }
       });
     }
