@@ -12,17 +12,15 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
-      setupCamera(this, '#E7C8A2', 0.4);
-      const centerX = this.cameras.main.width / 2;
-      const centerY = this.cameras.main.height / 2;
-
       createAnimations(this);
       this.ecs.addSystem(new RenderSystem(this));
       this.ecs.addSystem(new RotateToMouseSystem(this));
-      const playerId = createPlayer(this.ecs, this, centerX, centerY);
+      const playerId = createPlayer(this.ecs, this, 500, 500);
 
       const playerSprite = this.ecs.getComponent(playerId, 'sprite').phaserSprite;
       playerSprite.play('idle');
+
+      setupCamera(this, playerSprite, '#E7C8A2', 0.4);
     }
 
     update() {
