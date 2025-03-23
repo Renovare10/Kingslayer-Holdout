@@ -1,1 +1,3 @@
-export const createRotateToMouse = () => ({ enabled: true });
+export function createRotateToMouse() {
+  return { enabled: true };
+}
