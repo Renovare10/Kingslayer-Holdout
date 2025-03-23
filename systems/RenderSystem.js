@@ -10,5 +10,9 @@ export default class RenderSystem {
               sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
           }
       });
-  }
+    }
+
+      init(entities, components) {
+        this.update(entities, components);
+    }
 }
