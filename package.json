@@ -1,0 +1,18 @@
+{
+  "name": "kingslayer-holdout",
+  "version": "1.0.0",
+  "description": "A Phaser 3 game with ECS architecture",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite --open",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.2.6"
+  },
+  "license": "MIT"
+}
