@@ -1,18 +1,23 @@
 export class RotateToMouseSystem {
-  constructor(scene) {
+    constructor(scene) {
       this.scene = scene;
-  }
-
-  update(entities, components) {
-      const mouseX = this.scene.input.activePointer.x;
-      const mouseY = this.scene.input.activePointer.y;
-
-      entities.forEach((_, entityId) => {
-          const { position, sprite, rotateToMouse } = components.get(entityId) || {};
-          if (position && sprite && sprite.phaserSprite && rotateToMouse?.enabled) {
-              const angle = Phaser.Math.Angle.Between(position.x, position.y, mouseX, mouseY);
-              sprite.phaserSprite.rotation = angle;
+    }
+  
+    update(entities, components) {
+      const pointer = this.scene.input.activePointer;
+      const camera = this.scene.cameras.main;
+      const worldPoint = camera.getWorldPoint(pointer.x, pointer.y);
+  
+      for (const entityId of components.keys()) {
+        const rotateToMouse = components.get(entityId)?.rotateToMouse;
+        if (rotateToMouse?.enabled) {
+          const position = components.get(entityId).position;
+          const sprite = components.get(entityId).sprite;
+          if (position && sprite && sprite.phaserSprite) {
+            const angle = Phaser.Math.Angle.Between(position.x, position.y, worldPoint.x, worldPoint.y);
+            sprite.phaserSprite.rotation = angle;
           }
-      });
+        }
+      }
+    }
   }
-}
