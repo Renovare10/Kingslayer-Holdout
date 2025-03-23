@@ -12,7 +12,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
-      setupCamera(this);
+      setupCamera(this, '#E7C8A2', 0.4);
       const centerX = this.cameras.main.width / 2;
       const centerY = this.cameras.main.height / 2;
 
