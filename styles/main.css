@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  background: #e0d5b0;
+}
+
+/* Room to grow: Add styles later */
+.game-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Optional: Center canvas vertically */
+}
