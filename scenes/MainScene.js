@@ -3,6 +3,7 @@ import ECSManager from '../utils/ECSManager.js';
 import RenderSystem from '../systems/RenderSystem.js';
 import createPlayer from '../entities/Player.js';
 import { createAnimations } from '../utils/animations.js';
+import { setupCamera } from '../utils/camera.js';
 
 export default class MainScene extends Phaser.Scene {
     constructor() {
@@ -12,7 +13,7 @@ export default class MainScene extends Phaser.Scene {
 
     create() {
       // Set background to a light brown color
-      this.cameras.main.setBackgroundColor('#E7C8A2');
+      setupCamera(this);
       const centerX = this.cameras.main.width / 2;
       const centerY = this.cameras.main.height / 2;
 
