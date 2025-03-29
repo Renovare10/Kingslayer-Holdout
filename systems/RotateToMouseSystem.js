@@ -15,7 +15,7 @@ export class RotateToMouseSystem {
           const sprite = ecs.components.get(entityId).sprite;
           if (position && sprite && sprite.phaserSprite) {
             const angle = Phaser.Math.Angle.Between(position.x, position.y, worldPoint.x, worldPoint.y);
-            sprite.phaserSprite.rotation = angle;
+            sprite.phaserSprite.rotation = angle - 0.1; // Adding 10 degrees to adjust the rotation offset if needed
           }
         }
       }
