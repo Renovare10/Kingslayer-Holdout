@@ -8,8 +8,10 @@ export class ZombieSystem {
     this.zombieSpeed = 100;
   }
 
-  init(ecs) {
+  async init(ecs) {
     this.ecs = ecs;
+    const { createZombie } = await import('../src/entities/Zombie.js');
+    this.createZombie = createZombie;
   }
 
   update(ecs) {
@@ -59,8 +61,6 @@ export class ZombieSystem {
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
     const x = playerPos.x + Math.cos(angle) * this.spawnDistance;
     const y = playerPos.y + Math.sin(angle) * this.spawnDistance;
-
-    const { createZombie } = await import('../src/entities/Zombie.js');
-    createZombie(this.ecs, this.scene, x, y);
+    this.createZombie(this.ecs, this.scene, x, y);
   }
 }

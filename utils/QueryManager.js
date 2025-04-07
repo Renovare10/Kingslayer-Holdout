@@ -1,10 +1,10 @@
 export default class QueryManager {
   constructor(ecs) {
-    this.ecs = ecs; // Reference to ECSManager
-    this.componentIndex = new Map(); // componentName -> Set of entityIds
+    if (!ecs) throw new Error('QueryManager requires an ECSManager instance');
+    this.ecs = ecs;
+    this.componentIndex = new Map();
   }
 
-  // Called by ECSManager when adding a component
   indexComponent(entityId, componentName) {
     if (!this.componentIndex.has(componentName)) {
       this.componentIndex.set(componentName, new Set());
@@ -12,13 +12,12 @@ export default class QueryManager {
     this.componentIndex.get(componentName).add(entityId);
   }
 
-  // Called by ECSManager when removing a component
   unindexComponent(entityId, componentName) {
     this.componentIndex.get(componentName)?.delete(entityId);
   }
 
-  // Query entities with specific components
   getEntitiesWith(...componentNames) {
+    if (!this.ecs) throw new Error('QueryManager not initialized with ECS');
     if (componentNames.length === 0) return new Set();
 
     const firstComponent = componentNames[0];
