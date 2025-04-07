@@ -7,6 +7,7 @@ import createPlayer from '../src/entities/Player.js';
 import { createZombie } from '../src/entities/Zombie.js';
 import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
+import { ZombieSystem } from '../systems/ZombieSystem.js';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -21,14 +22,12 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
+    this.ecs.addSystem(new ZombieSystem(this));
 
     // Create Player
     const playerId = createPlayer(this.ecs, this, 500, 500);
     const playerSprite = this.ecs.getComponent(playerId, 'sprite').phaserSprite;
     playerSprite.play('idle');
-
-    // Create Zombie (above player)
-    createZombie(this.ecs, this, 500, -500);
 
     // Setup Camera
     setupCamera(this, playerSprite, '#E7C8A2', 0.4);

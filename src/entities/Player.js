@@ -5,6 +5,7 @@ import { createMovement } from '../../components/Movement.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
+  ecs.addComponent(playerId, 'player', { active: true }); // Flag as player
   ecs.addComponent(playerId, 'position', new Position(x, y));
   ecs.addComponent(playerId, 'sprite', new Sprite(scene, x, y, 'survivor-idle_handgun_0'));
   ecs.addComponent(playerId, 'rotateToMouse', createRotateToMouse()); 

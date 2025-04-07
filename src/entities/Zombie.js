@@ -1,17 +1,13 @@
-import Position from '../../components/Position.js';  // Default import
-import Sprite from '../../components/Sprite.js';      // Default import
+import Position from '../../components/Position.js';
+import Sprite from '../../components/Sprite.js';
+import { createMovement } from '../../components/Movement.js';
 
 export function createZombie(ecs, scene, x, y) {
   const zombieId = ecs.createEntity();
-  
-  // Add Position component
   ecs.addComponent(zombieId, 'position', new Position(x, y));
-  
-  // Add Sprite component
   ecs.addComponent(zombieId, 'sprite', new Sprite(scene, x, y, 'zombie'));
-  
-  // Initialize the entity in the ECS
-  ecs.initEntity(zombieId, ecs);
-  
+  ecs.addComponent(zombieId, 'movement', createMovement(100, 'zombie'));
+  ecs.addComponent(zombieId, 'zombie', { active: true });
+  ecs.initEntity(zombieId);
   return zombieId;
 }
