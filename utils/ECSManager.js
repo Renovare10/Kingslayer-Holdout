@@ -6,10 +6,11 @@ export default class ECSManager {
     this.components = new Map();
     this.systems = [];
     this.queryManager = new QueryManager(this);
+    this.nextId = 1;
   }
 
   createEntity() {
-    const id = this.entities.size + 1;
+    const id = this.nextId++;
     this.entities.set(id, {});
     return id;
   }
