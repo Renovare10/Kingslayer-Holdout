@@ -1,8 +1,6 @@
-import { createBullet } from '../components/Bullet.js';
+import { createBullet } from '../entities/Bullet.js'; // Updated import
 import Position from '../components/Position.js';
 import Sprite from '../components/Sprite.js';
-import { createMovement } from '../components/Movement.js';
-import { createEntityType } from '../components/EntityType.js';
 
 export class PlayerShootingSystem {
   constructor(scene) {
@@ -41,12 +39,7 @@ export class PlayerShootingSystem {
       y: Math.sin(angle) * speed
     };
 
-    const bulletId = this.ecs.createEntity();
-    this.ecs.addComponent(bulletId, 'position', new Position(position.x, position.y));
-    this.ecs.addComponent(bulletId, 'movement', createMovement(speed, velocity));
-    this.ecs.addComponent(bulletId, 'sprite', new Sprite(this.scene, position.x, position.y, null));
-    this.ecs.addComponent(bulletId, 'bullet', createBullet(10, 5000));
-    this.ecs.addComponent(bulletId, 'entityType', createEntityType('bullet'));
+    createBullet(this.ecs, this.scene, position.x, position.y, velocity);
     
     shooting.currentCooldown = shooting.cooldown;
   }
