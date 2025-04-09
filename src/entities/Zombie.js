@@ -1,6 +1,6 @@
-import Position from '../../components/Position.js';
-import Sprite from '../../components/Sprite.js';
-import { createMovement } from '../../components/Movement.js';
+import Position from '../components/Position.js';
+import Sprite from '../components/Sprite.js';
+import { createMovement } from '../components/Movement.js';
 
 export function createZombie(ecs, scene, x, y) {
   const zombieId = ecs.createEntity();

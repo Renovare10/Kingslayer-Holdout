@@ -3,7 +3,7 @@ import ECSManager from '../utils/ECSManager.js';
 import RenderSystem from '../systems/RenderSystem.js';
 import { RotateToMouseSystem } from '../systems/RotateToMouseSystem.js';
 import { PlayerMovementSystem } from '../systems/PlayerMovementSystem.js';
-import createPlayer from '../src/entities/Player.js';
+import createPlayer from '../entities/Player.js';
 import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
 import { ZombieSystem } from '../systems/ZombieSystem.js';
@@ -21,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
-    this.ecs.addSystem(new ZombieSystem(this));
+    //dsthis.ecs.addSystem(new ZombieSystem(this));
 
     // Create Player
     const playerId = createPlayer(this.ecs, this, 500, 500);

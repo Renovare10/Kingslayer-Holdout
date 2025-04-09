@@ -1,7 +1,7 @@
-import Position from '../../components/Position.js';
-import Sprite from '../../components/Sprite.js';
-import { createRotateToMouse } from '../../components/RotateToMouse.js';
-import { createMovement } from '../../components/Movement.js';
+import Position from '../components/Position.js';
+import Sprite from '../components/Sprite.js';
+import { createRotateToMouse } from '../components/RotateToMouse.js';
+import { createMovement } from '../components/Movement.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();

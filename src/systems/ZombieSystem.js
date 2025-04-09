@@ -10,7 +10,7 @@ export class ZombieSystem {
 
   async init(ecs) {
     this.ecs = ecs;
-    const { createZombie } = await import('../src/entities/Zombie.js');
+    const { createZombie } = await import('../entities/Zombie.js');
     this.createZombie = createZombie;
   }
 

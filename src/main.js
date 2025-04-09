@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import PreloaderScene from '../scenes/PreloaderScene.js';
-import MainScene from '../scenes/MainScene.js';
+import PreloaderScene from './scenes/PreloaderScene.js';
+import MainScene from './scenes/MainScene.js';
 
 const config = {
     type: Phaser.AUTO,
