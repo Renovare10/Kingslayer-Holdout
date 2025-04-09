@@ -9,7 +9,7 @@ export function createZombie(ecs, scene, x, y) {
   ecs.addComponent(zombieId, 'sprite', new Sprite(scene, x, y, 'zombie'));
   ecs.addComponent(zombieId, 'movement', createMovement(100));
   ecs.addComponent(zombieId, 'zombie', { active: true });
-  ecs.addComponent(zombieId, createEntityType('zombie'));
+  ecs.addComponent(zombieId, 'entityType', createEntityType('zombie'));
   ecs.initEntity(zombieId);
   return zombieId;
 }
