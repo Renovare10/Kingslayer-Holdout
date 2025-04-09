@@ -5,8 +5,8 @@ export default class RenderSystem {
 
   update(ecs) {
     ecs.entities.forEach((_, entityId) => {
-      const { position, sprite } = ecs.components.get(entityId) || {};
-      if (position && sprite) {
+      const { position, sprite, bullet } = ecs.components.get(entityId) || {};
+      if (position && sprite && !bullet) { // Skip bullets
         if (!sprite.phaserSprite) {
           sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
         } else {
@@ -18,8 +18,8 @@ export default class RenderSystem {
   }
 
   initEntity(entityId, ecs) {
-    const { position, sprite } = ecs.components.get(entityId) || {};
-    if (position && sprite && !sprite.phaserSprite) {
+    const { position, sprite, bullet } = ecs.components.get(entityId) || {};
+    if (position && sprite && !bullet && !sprite.phaserSprite) { // Skip bullets
       sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
     }
   }

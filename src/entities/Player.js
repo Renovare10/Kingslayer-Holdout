@@ -2,6 +2,7 @@ import Position from '../components/Position.js';
 import Sprite from '../components/Sprite.js';
 import { createRotateToMouse } from '../components/RotateToMouse.js';
 import { createMovement } from '../components/Movement.js';
+import { createShooting } from '../components/Shooting.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
@@ -10,5 +11,7 @@ export default function createPlayer(ecs, scene, x, y) {
   ecs.addComponent(playerId, 'sprite', new Sprite(scene, x, y, 'survivor-idle_handgun_0'));
   ecs.addComponent(playerId, 'rotateToMouse', createRotateToMouse()); 
   ecs.addComponent(playerId, 'movement', createMovement(200, 'player'));
+  ecs.addComponent(playerId, 'shooting', createShooting());
+  
   return playerId;
 }

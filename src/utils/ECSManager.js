@@ -37,6 +37,9 @@ export default class ECSManager {
   destroyEntity(entityId) {
     if (this.entities.has(entityId)) {
       const components = this.components.get(entityId) || {};
+      if (components.sprite && components.sprite.phaserSprite) {
+        components.sprite.phaserSprite.destroy(); // Clean up Phaser sprite
+      }
       for (const componentName in components) {
         this.queryManager.unindexComponent(entityId, componentName);
       }

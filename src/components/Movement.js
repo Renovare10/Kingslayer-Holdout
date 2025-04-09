@@ -1,7 +1,7 @@
-export function createMovement(speed, type) {
+export function createMovement(speed, type, velocity = { x: 0, y: 0 }) {
   return {
-    speed,              // Pixels per second
-    velocity: { x: 0, y: 0 }, // Current direction/speed
-    type                
+    speed,           // Movement speed in pixels per second
+    velocity,        // Current movement direction and magnitude
+    type             // Identifies movement behavior or entity type
   };
 }
