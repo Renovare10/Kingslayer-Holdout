@@ -2,6 +2,7 @@ import { createBullet } from '../components/Bullet.js';
 import Position from '../components/Position.js';
 import Sprite from '../components/Sprite.js';
 import { createMovement } from '../components/Movement.js';
+import { createEntityType } from '../components/EntityType.js';
 
 export class PlayerShootingSystem {
   constructor(scene) {
@@ -13,8 +14,10 @@ export class PlayerShootingSystem {
     this.ecs = ecs;
     if (!this.shootEventSet) {
       this.scene.input.on('pointerdown', () => {
-        const player = Array.from(this.ecs.queryManager.getEntitiesWith('shooting', 'movement'))
-          .find(id => this.ecs.getComponent(id, 'movement').type === 'player');
+        const player = this.ecs.queryManager.getEntitiesWith(
+          'shooting', 'entityType',
+          id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
+        ).values().next().value;
         if (player) {
           this.ecs.emit('shoot', { entityId: player, target: this.scene.input.activePointer });
         }
@@ -40,16 +43,19 @@ export class PlayerShootingSystem {
 
     const bulletId = this.ecs.createEntity();
     this.ecs.addComponent(bulletId, 'position', new Position(position.x, position.y));
-    this.ecs.addComponent(bulletId, 'movement', createMovement(speed, 'bullet', velocity));
+    this.ecs.addComponent(bulletId, 'movement', createMovement(speed, velocity));
     this.ecs.addComponent(bulletId, 'sprite', new Sprite(this.scene, position.x, position.y, null));
     this.ecs.addComponent(bulletId, 'bullet', createBullet(10, 5000));
+    this.ecs.addComponent(bulletId, 'entityType', createEntityType('bullet'));
     
     shooting.currentCooldown = shooting.cooldown;
   }
 
   update(ecs) {
-    const player = Array.from(ecs.queryManager.getEntitiesWith('shooting', 'movement'))
-      .find(id => ecs.getComponent(id, 'movement').type === 'player');
+    const player = ecs.queryManager.getEntitiesWith(
+      'shooting', 'entityType',
+      id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
+    ).values().next().value;
     if (!player) return;
 
     const shooting = ecs.getComponent(player, 'shooting');

@@ -18,14 +18,12 @@ export class ZombieSystem {
     const deltaSeconds = this.scene.game.loop.delta / 1000;
 
     // Find player position
-    const playerEntities = ecs.queryManager.getEntitiesWith('player');
-    let playerPos = null;
-    if (playerEntities.size > 0) {
-      const playerId = playerEntities.values().next().value;
-      playerPos = ecs.getComponent(playerId, 'position');
-    }
-
-    if (!playerPos) return;
+    const player = ecs.queryManager.getEntitiesWith(
+      'position', 'entityType',
+      id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
+    ).values().next().value;
+    if (!player) return;
+    const playerPos = ecs.getComponent(player, 'position');
 
     // Spawn zombies
     this.spawnTimer += deltaSeconds;
@@ -35,8 +33,11 @@ export class ZombieSystem {
     }
 
     // Move zombies toward player
-    const zombieEntities = ecs.queryManager.getEntitiesWith('zombie');
-    zombieEntities.forEach(entityId => {
+    const zombies = ecs.queryManager.getEntitiesWith(
+      'position', 'movement', 'entityType',
+      id => this.ecs.getComponent(id, 'entityType')?.type === 'zombie'
+    );
+    zombies.forEach(entityId => {
       const pos = ecs.getComponent(entityId, 'position');
       const move = ecs.getComponent(entityId, 'movement');
 
@@ -57,7 +58,7 @@ export class ZombieSystem {
     });
   }
 
-  async spawnZombie(playerPos) {
+  spawnZombie(playerPos) {
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
     const x = playerPos.x + Math.cos(angle) * this.spawnDistance;
     const y = playerPos.y + Math.sin(angle) * this.spawnDistance;

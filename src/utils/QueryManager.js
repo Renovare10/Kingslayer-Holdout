@@ -1,6 +1,5 @@
 export default class QueryManager {
   constructor(ecs) {
-    if (!ecs) throw new Error('QueryManager requires an ECSManager instance');
     this.ecs = ecs;
     this.componentIndex = new Map();
   }
@@ -13,27 +12,29 @@ export default class QueryManager {
   }
 
   unindexComponent(entityId, componentName) {
-    this.componentIndex.get(componentName)?.delete(entityId);
+    if (this.componentIndex.has(componentName)) {
+      this.componentIndex.get(componentName).delete(entityId);
+    }
   }
 
-  getEntitiesWith(...componentNames) {
-    if (!this.ecs) throw new Error('QueryManager not initialized with ECS');
+  getEntitiesWith(...args) {
+    const componentNames = args.filter(arg => typeof arg === 'string');
+    const filter = args.find(arg => typeof arg === 'function') || (() => true);
+
+    if (!this.ecs) {
+      throw new Error('QueryManager not initialized with ECS');
+    }
     if (componentNames.length === 0) return new Set();
 
-    const firstComponent = componentNames[0];
-    const initialSet = this.componentIndex.get(firstComponent) || new Set();
-
-    if (componentNames.length === 1) return new Set(initialSet);
-
-    const result = new Set(initialSet);
-    for (let i = 1; i < componentNames.length; i++) {
-      const componentSet = this.componentIndex.get(componentNames[i]) || new Set();
-      for (const entityId of result) {
-        if (!componentSet.has(entityId)) {
-          result.delete(entityId);
-        }
-      }
-    }
-    return result;
+    const sets = componentNames
+      .filter(name => this.componentIndex.has(name))
+      .map(name => this.componentIndex.get(name));
+    
+    if (sets.length === 0) return new Set();
+    
+    return new Set([...sets[0]]
+      .filter(id => sets.every(set => set.has(id)))
+      .filter(id => filter(id, this.ecs))
+    );
   }
 }

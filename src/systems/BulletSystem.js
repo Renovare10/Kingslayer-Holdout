@@ -22,11 +22,16 @@ export class BulletSystem {
   }
 
   update(ecs) {
-    const bullets = ecs.queryManager.getEntitiesWith('bullet', 'position', 'movement', 'sprite');
-    const currentTime = Date.now();
+    const bullets = ecs.queryManager.getEntitiesWith(
+      'bullet', 'position', 'movement', 'sprite', 'entityType',
+      id => this.ecs.getComponent(id, 'entityType')?.type === 'bullet'
+    );
 
+    const currentTime = Date.now();
     bullets.forEach(entityId => {
       const bullet = ecs.getComponent(entityId, 'bullet');
+      if (!bullet) return;
+
       const position = ecs.getComponent(entityId, 'position');
       const movement = ecs.getComponent(entityId, 'movement');
       const sprite = ecs.getComponent(entityId, 'sprite').phaserSprite;

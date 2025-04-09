@@ -23,7 +23,7 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
-    //dsthis.ecs.addSystem(new ZombieSystem(this));
+    this.ecs.addSystem(new ZombieSystem(this));
     this.ecs.addSystem(new PlayerShootingSystem(this));
     this.ecs.addSystem(new BulletSystem(this));
 
