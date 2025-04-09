@@ -7,6 +7,7 @@ export default class ECSManager {
     this.systems = [];
     this.queryManager = new QueryManager(this);
     this.nextId = 1;
+    this.events = new Map(); // Event listeners
   }
 
   createEntity() {
@@ -38,7 +39,7 @@ export default class ECSManager {
     if (this.entities.has(entityId)) {
       const components = this.components.get(entityId) || {};
       if (components.sprite && components.sprite.phaserSprite) {
-        components.sprite.phaserSprite.destroy(); // Clean up Phaser sprite
+        components.sprite.phaserSprite.destroy();
       }
       for (const componentName in components) {
         this.queryManager.unindexComponent(entityId, componentName);
@@ -69,5 +70,16 @@ export default class ECSManager {
         system.initEntity(entityId, this);
       }
     });
+  }
+
+  emit(eventName, data) {
+    if (this.events.has(eventName)) {
+      this.events.get(eventName).forEach(callback => callback(data));
+    }
+  }
+
+  on(eventName, callback) {
+    if (!this.events.has(eventName)) this.events.set(eventName, new Set());
+    this.events.get(eventName).add(callback);
   }
 }

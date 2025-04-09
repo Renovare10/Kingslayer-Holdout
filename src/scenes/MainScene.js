@@ -8,7 +8,7 @@ import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
 import { ZombieSystem } from '../systems/ZombieSystem.js';
 import { BulletSystem } from '../systems/BulletSystem.js';
-import { ShootingSystem } from '../systems/ShootingSystem.js';
+import { PlayerShootingSystem } from '../systems/PlayerShootingSystem.js';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -24,7 +24,7 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
     //dsthis.ecs.addSystem(new ZombieSystem(this));
-    this.ecs.addSystem(new ShootingSystem(this));
+    this.ecs.addSystem(new PlayerShootingSystem(this));
     this.ecs.addSystem(new BulletSystem(this));
 
     // Create Player
