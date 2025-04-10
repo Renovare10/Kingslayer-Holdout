@@ -35,7 +35,7 @@ I’m working on a Phaser 3 game called "kingslayer-holdout" using Vite as the b
   - `PlayerMovementSystem.js`: Moves player with WASD (`update(ecs)`).
   - `ZombieSystem.js`: Spawns zombies every 2s at 800 units from player, moves them toward player at speed 100 (`update(ecs)`). `createZombie` import moved to `init`.
   - `PlayerShootingSystem.js`: Fires bullets on click (`update(ecs)`), uses event system (`ecs.emit`).
-  - `BulletSystem.js`: Moves bullets, renders as 14x3 black rectangles, despawns after lifespan (`update(ecs)`).
+  - `BulletSystem.js`: Moves bullets, renders as 14x3 black rectangles, despawns after lifespan, checks bullet-zombie collisions (`update(ecs)`).
 - `src/entities/`:
   - `Player.js`: `export default function createPlayer(ecs, scene, x, y)` builds player with `'position'`, `'sprite'`, `'rotatetomouse'`, `'movement'`, `'shooting'`, `'entityType' ('player')`.
   - `Zombie.js`: `export function createZombie(ecs, scene, x, y)` builds zombie with `'position'`, `'sprite'`, `'movement'`, `'zombie'`, `'entityType' ('zombie')`.
@@ -49,7 +49,7 @@ I’m working on a Phaser 3 game called "kingslayer-holdout" using Vite as the b
 ## Current State
 - Player at world (500, 500), animated with 20 frames (`survivor-idle_handgun_0.png` to `_19.png`), rotates to mouse, moves with WASD (speed 200), shoots bullets on click (speed 4000, cooldown 0.2s).
 - Zombies spawn every 2s, 800 units from player in a random direction, move toward player (speed 100), use `zombie.png` loaded from `assets/Zombie/zombie.png`.
-- Bullets are 14x3 black rectangles, move at 4000 pixels/sec toward mouse, despawn after 5000ms.
+- Bullets are 14x3 black rectangles, move at 4000 pixels/sec toward mouse, despawn after 5000ms, and destroy zombies on collision within a 120-unit radius.
 - Static red box at (600, 600), 50x50, rendered directly in `MainScene` (not ECS).
 - Camera follows player, full-screen with background `#E7C8A2`, zoom 0.4.
 - Systems (`RenderSystem`, `RotateToMouseSystem`, `PlayerMovementSystem`, `ZombieSystem`, `PlayerShootingSystem`, `BulletSystem`) accept scene parameter and use `ecs.queryManager`.
@@ -80,8 +80,6 @@ I’m working on a Phaser 3 game called "kingslayer-holdout" using Vite as the b
 - `ZombieSystem`: Moved `await import('../src/entities/Zombie.js')` to `init`, stored as `this.createZombie`.
 - `QueryManager`: Enhanced with filter function for value-based queries (e.g., `type === 'player'`).
 - `ECSManager`: Added basic event system (`emit`, `on`) for shooting triggers.
-- Next feature: Bullet-zombie collisions to destroy zombies, leveraging `destroyEntity`.
-- Consider: Separating event system into `EventManager.js` if it grows; adding multiple shooters (e.g., turrets) with `'shooting'` component and custom targeting.
+- `BulletSystem`: Now handles bullet-zombie collisions, destroying both entities on hit (120-unit radius) using `ecs.destroyEntity`.
+- Consider: Separating event system into `EventManager.js` if it grows; adding multiple shooters (e.g., turrets) with `'shooting'` component and custom targeting; refining collision detection (e.g., health system, physics-based checks).
 - **Context Format**: Future updates should be provided as Markdown (`.md`) files within `<xaiArtifact>` tags for easy copy-pasting (e.g., to GitHub). To manage size, provide the latest `AI_Context.md` at thread start; updates will modify specific sections (e.g., `File Structure`, `Notes`) rather than regenerating the entire file, unless a full refresh is requested.
-
-Start from this setup and help me [your next task].
