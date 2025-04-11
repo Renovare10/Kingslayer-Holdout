@@ -69,19 +69,10 @@ export class BulletSystem {
   checkCollisions(entityId, ecs) {
     const bulletPos = ecs.getComponent(entityId, 'position');
     // Log all entities for debugging
-    const allEntities = ecs.queryManager.getEntitiesWith('position', 'entityType');
-    console.log(`All entities with position and entityType:`, Array.from(allEntities).map(id => ({
-      id,
-      entityType: ecs.getComponent(id, 'entityType'),
-      position: ecs.getComponent(id, 'position')
-    })));
-
     const zombies = ecs.queryManager.getEntitiesWith(
       'position', 'entityType',
       id => ecs.getComponent(id, 'entityType')?.type === 'zombie' // Use ecs.getComponent
     );
-
-    console.log(`Checking bullet ${entityId} at (${bulletPos.x}, ${bulletPos.y}), found ${zombies.size} zombies`);
 
     for (const zombieId of zombies) {
       const zombiePos = ecs.getComponent(zombieId, 'position');
@@ -92,10 +83,7 @@ export class BulletSystem {
         zombiePos.y
       );
 
-      console.log(`Zombie ${zombieId} at (${zombiePos.x}, ${zombiePos.y}), distance: ${distance}`);
-
       if (distance < 120) {
-        console.log(`Hit! Destroying zombie ${zombieId} and bullet ${entityId}`);
         ecs.destroyEntity(zombieId);
         ecs.destroyEntity(entityId);
         return true;
