@@ -9,13 +9,14 @@ export class BulletSystem {
 
   initEntity(entityId, ecs) {
     const spriteComp = ecs.getComponent(entityId, 'sprite');
+    const bulletSize = ecs.getComponent(entityId, 'size');
     if (spriteComp && ecs.getComponent(entityId, 'bullet')) {
       if (spriteComp.phaserSprite) spriteComp.phaserSprite.destroy();
       const position = ecs.getComponent(entityId, 'position');
       spriteComp.phaserSprite = this.scene.add.rectangle(
         position.x,
         position.y,
-        14, 3,
+        bulletSize.width, bulletSize.height,
         0x000000
       ).setOrigin(0.5);
     }
