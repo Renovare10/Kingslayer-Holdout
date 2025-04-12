@@ -8,9 +8,12 @@ const config = {
     height: window.innerHeight,
     parent: 'game-container',
     scene: [PreloaderScene,MainScene],
-    physics: {
+    physics: { 
         default: 'arcade',
-        arcade: { gravity: { y: 0 } }
+        arcade: {
+            gravity: { y: 0,},
+            debug: true
+        }
     },
     scale: {
         mode: Phaser.Scale.RESIZE,
