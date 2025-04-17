@@ -1,26 +1,32 @@
+// src/systems/RenderSystem.js
 export default class RenderSystem {
   constructor(scene) {
     this.scene = scene;
   }
 
-  update(ecs) {
-    ecs.entities.forEach((_, entityId) => {
-      const { position, sprite, bullet } = ecs.components.get(entityId) || {};
-      if (position && sprite && !bullet) { // Skip bullets
-        if (!sprite.phaserSprite) {
-          sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
-        } else {
-          sprite.phaserSprite.x = position.x;
-          sprite.phaserSprite.y = position.y;
-        }
-      }
-    });
+  init(ecs) {
+    this.ecs = ecs;
   }
 
   initEntity(entityId, ecs) {
-    const { position, sprite, bullet } = ecs.components.get(entityId) || {};
-    if (position && sprite && !bullet && !sprite.phaserSprite) { // Skip bullets
-      sprite.phaserSprite = this.scene.add.sprite(position.x, position.y, sprite.key).setOrigin(0.5);
+    const sprite = ecs.getComponent(entityId, 'sprite');
+    if (sprite && sprite.phaserSprite) {
+      sprite.phaserSprite.setDepth(1);
+    }
+  }
+
+  update(ecs) {
+    const entities = ecs.queryManager.getEntitiesWith('position', 'sprite');
+    for (const entityId of entities) {
+      const position = ecs.getComponent(entityId, 'position');
+      const sprite = ecs.getComponent(entityId, 'sprite');
+      const physicsBody = ecs.getComponent(entityId, 'physicsBody');
+
+      // Skip position update for physics-enabled entities
+      if (!physicsBody) {
+        sprite.phaserSprite.x = position.x;
+        sprite.phaserSprite.y = position.y;
+      }
     }
   }
 }

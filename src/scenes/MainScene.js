@@ -1,3 +1,4 @@
+// src/scenes/MainScene.js
 import Phaser from 'phaser';
 import ECSManager from '../utils/ECSManager.js';
 import RenderSystem from '../systems/RenderSystem.js';
@@ -18,7 +19,7 @@ export default class MainScene extends Phaser.Scene {
 
   create() {
     createAnimations(this);
-    
+
     // Add systems to ECS
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
@@ -35,8 +36,10 @@ export default class MainScene extends Phaser.Scene {
     // Setup Camera
     setupCamera(this, playerSprite, '#E7C8A2', 0.4);
 
-    // Add a static red box directly (not ECS)
-    this.add.rectangle(600, 600, 50, 50, 0xff0000).setOrigin(0.5);
+    // Add static red box as physics object
+    const redBox = this.physics.add.staticImage(600, 600, null).setSize(50, 50).setOrigin(0.5);
+    redBox.setTint(0xff0000); // Red color
+    this.physics.add.collider(playerSprite, redBox); // Add collision
   }
 
   update() {

@@ -9,10 +9,10 @@ import { createEntityType } from '../components/EntityType.js';
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
   ecs.addComponent(playerId, 'position', new Position(x, y));
-  const sprite = new Sprite(scene, x, y, 'survivor-idle_handgun');
+  const sprite = new Sprite(scene, x, y, 'survivor-idle_handgun_0', true); // Enable physics
   sprite.phaserSprite.setOrigin(0.5);
-  sprite.phaserSprite.body.setCircle(85); // Radius = half of 170
-  sprite.phaserSprite.body.setOffset(40, 25); // Keep existing offset
+  sprite.phaserSprite.body.setCircle(85);
+  sprite.phaserSprite.body.setOffset(40, 25);
   ecs.addComponent(playerId, 'sprite', sprite);
   ecs.addComponent(playerId, 'rotatetomouse', createRotateToMouse());
   ecs.addComponent(playerId, 'movement', createMovement(200));
