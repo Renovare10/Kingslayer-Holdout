@@ -21,7 +21,7 @@ export class RotateToMouseSystem {
       if (rotateToMouse?.enabled) {
         const sprite = ecs.getComponent(entityId, 'sprite').phaserSprite;
         const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, worldPoint.x, worldPoint.y);
-        sprite.rotation = angle; // Remove -0.1 offset
+        sprite.rotation = angle;
       }
     });
   }
