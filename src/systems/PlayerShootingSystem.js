@@ -1,4 +1,4 @@
-import { createBullet } from '../entities/Bullet.js'; // Updated import
+import { createBullet } from '../entities/Bullet.js';
 import Position from '../components/Position.js';
 import Sprite from '../components/Sprite.js';
 
@@ -32,6 +32,7 @@ export class PlayerShootingSystem {
     const position = this.ecs.getComponent(entityId, 'position');
     const sprite = this.ecs.getComponent(entityId, 'sprite').phaserSprite;
 
+    // Use sprite's exact position to ensure centering
     const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, target.worldX, target.worldY);
     const speed = 4000;
     const velocity = {
@@ -39,8 +40,9 @@ export class PlayerShootingSystem {
       y: Math.sin(angle) * speed
     };
 
-    createBullet(this.ecs, this.scene, position.x, position.y, velocity);
-    
+    // Spawn bullet at sprite's center
+    createBullet(this.ecs, this.scene, sprite.x, sprite.y, velocity);
+
     shooting.currentCooldown = shooting.cooldown;
   }
 

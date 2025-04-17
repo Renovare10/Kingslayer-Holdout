@@ -1,4 +1,3 @@
-// src/scenes/MainScene.js
 import Phaser from 'phaser';
 import ECSManager from '../utils/ECSManager.js';
 import RenderSystem from '../systems/RenderSystem.js';
@@ -24,14 +23,13 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
-    this.ecs.addSystem(new ZombieSystem(this));
+    //this.ecs.addSystem(new ZombieSystem(this));
     this.ecs.addSystem(new PlayerShootingSystem(this));
     this.ecs.addSystem(new BulletSystem(this));
 
     // Create Player
     const playerId = createPlayer(this.ecs, this, 500, 500);
     const playerSprite = this.ecs.getComponent(playerId, 'sprite').phaserSprite;
-    playerSprite.play('idle');
 
     // Setup Camera
     setupCamera(this, playerSprite, '#E7C8A2', 0.4);

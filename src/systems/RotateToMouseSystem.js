@@ -4,7 +4,7 @@ export class RotateToMouseSystem {
   }
 
   init(ecs) {
-    this.ecs = ecs; // Add init to store ecs
+    this.ecs = ecs;
   }
 
   update(ecs) {
@@ -19,10 +19,9 @@ export class RotateToMouseSystem {
     entities.forEach(entityId => {
       const rotateToMouse = ecs.getComponent(entityId, 'rotatetomouse');
       if (rotateToMouse?.enabled) {
-        const position = ecs.getComponent(entityId, 'position');
         const sprite = ecs.getComponent(entityId, 'sprite').phaserSprite;
-        const angle = Phaser.Math.Angle.Between(position.x, position.y, worldPoint.x, worldPoint.y);
-        sprite.rotation = angle - 0.1; // Adjust offset
+        const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, worldPoint.x, worldPoint.y);
+        sprite.rotation = angle; // Remove -0.1 offset
       }
     });
   }

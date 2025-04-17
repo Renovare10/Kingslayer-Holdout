@@ -10,6 +10,7 @@ export function createBullet(ecs, scene, x, y, velocity, { width = 14, height = 
   ecs.addComponent(bulletId, 'position', new Position(x, y));
   ecs.addComponent(bulletId, 'size', new Size(width, height));
   ecs.addComponent(bulletId, 'movement', createMovement(speed, velocity));
+  // Initialize with a placeholder sprite; BulletSystem will override
   ecs.addComponent(bulletId, 'sprite', new Sprite(scene, x, y, null));
   ecs.addComponent(bulletId, 'bullet', createBulletComponent(damage, lifespan));
   ecs.addComponent(bulletId, 'entityType', createEntityType('bullet'));

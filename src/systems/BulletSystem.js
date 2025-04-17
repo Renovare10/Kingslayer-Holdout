@@ -16,9 +16,11 @@ export class BulletSystem {
       spriteComp.phaserSprite = this.scene.add.rectangle(
         position.x,
         position.y,
-        bulletSize.width, bulletSize.height,
+        bulletSize.width,
+        bulletSize.height,
         0x000000
       ).setOrigin(0.5);
+      spriteComp.phaserSprite.setDepth(1); // Ensure visibility
     }
   }
 
@@ -69,10 +71,9 @@ export class BulletSystem {
 
   checkCollisions(entityId, ecs) {
     const bulletPos = ecs.getComponent(entityId, 'position');
-    // Log all entities for debugging
     const zombies = ecs.queryManager.getEntitiesWith(
       'position', 'entityType',
-      id => ecs.getComponent(id, 'entityType')?.type === 'zombie' // Use ecs.getComponent
+      id => ecs.getComponent(id, 'entityType')?.type === 'zombie'
     );
 
     for (const zombieId of zombies) {
