@@ -19,11 +19,14 @@ export default class MainScene extends Phaser.Scene {
   create() {
     createAnimations(this);
 
+    // Create zombie physics group
+    const zombieGroup = this.physics.add.group();
+
     // Add systems to ECS
     this.ecs.addSystem(new RenderSystem(this));
     this.ecs.addSystem(new RotateToMouseSystem(this));
     this.ecs.addSystem(new PlayerMovementSystem(this));
-    //this.ecs.addSystem(new ZombieSystem(this));
+    this.ecs.addSystem(new ZombieSystem(this, zombieGroup));
     this.ecs.addSystem(new PlayerShootingSystem(this));
     this.ecs.addSystem(new BulletSystem(this));
 
@@ -37,7 +40,13 @@ export default class MainScene extends Phaser.Scene {
     // Add static red box as physics object
     const redBox = this.physics.add.staticImage(600, 600, null).setSize(50, 50).setOrigin(0.5);
     redBox.setTint(0xff0000); // Red color
-    this.physics.add.collider(playerSprite, redBox); // Add collision
+    this.physics.add.collider(playerSprite, redBox); // Player-red box collision
+
+    // Add player-zombie collision
+    this.physics.add.collider(playerSprite, zombieGroup);
+
+    // Add zombie-zombie collision
+    this.physics.add.collider(zombieGroup, zombieGroup);
   }
 
   update() {
