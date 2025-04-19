@@ -28,7 +28,7 @@ export default class MainScene extends Phaser.Scene {
     this.ecs.addSystem(new PlayerMovementSystem(this));
     this.ecs.addSystem(new PlayerShootingSystem(this));
     this.ecs.addSystem(new BulletSystem(this));
-    //this.ecs.addSystem(new ZombieSystem(this, zombieGroup));
+    this.ecs.addSystem(new ZombieSystem(this, zombieGroup));
 
     // Create Player
     const playerId = createPlayer(this.ecs, this, 500, 500);
