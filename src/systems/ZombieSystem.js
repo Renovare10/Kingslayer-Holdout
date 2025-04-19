@@ -69,9 +69,6 @@ export class ZombieSystem {
   
       // Set velocity
       body.setVelocity(velocityX, velocityY);
-  
-      // Debug logging
-      console.log(`Zombie ${zombieId}: Pos(${zombiePos.x.toFixed(2)}, ${zombiePos.y.toFixed(2)}), Angle: ${(angle * 180 / Math.PI).toFixed(2)}°, Velocity: (${velocityX.toFixed(2)}, ${velocityY.toFixed(2)})`);
     });
   }
 }
