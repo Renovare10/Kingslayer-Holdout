@@ -1,106 +1,70 @@
+import createZombie from '../entities/Zombie.js';
+
 export class ZombieSystem {
   constructor(scene, zombieGroup) {
     this.scene = scene;
     this.zombieGroup = zombieGroup;
-    this.ecs = null;
     this.spawnTimer = 0;
-    this.spawnInterval = 2;
-    this.spawnDistance = 800;
-    this.zombieSpeed = 100;
-  }
-
-  async init(ecs) {
-    this.ecs = ecs;
-    const { createZombie } = await import('../entities/Zombie.js');
-    this.createZombie = createZombie;
+    this.spawnInterval = 2000; // Spawn every 2s
   }
 
   update(ecs) {
-    const deltaSeconds = this.scene.game.loop.delta / 1000;
-    this.updateSpawnTimer(deltaSeconds);
+    this.ecs = ecs;
+    this.updateSpawnTimer();
     this.moveZombiesTowardPlayer();
   }
 
-  updateSpawnTimer(deltaSeconds) {
-    this.spawnTimer += deltaSeconds;
+  updateSpawnTimer() {
+    this.spawnTimer += this.scene.sys.game.loop.delta;
     if (this.spawnTimer >= this.spawnInterval) {
-      const playerPos = this.getPlayerPosition();
-      if (playerPos) {
-        this.spawnZombieAtDistance(playerPos);
-        this.spawnTimer = 0;
-      }
+      this.spawnZombie();
+      this.spawnTimer = 0;
     }
   }
 
-  getPlayerPosition() {
-    const player = this.ecs.queryManager.getEntitiesWith(
-      'position', 'entityType',
-      id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
-    ).values().next().value;
-    return player ? this.ecs.getComponent(player, 'position') : null;
-  }
+  spawnZombie() {
+    const playerEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'position', entityId => {
+      return this.ecs.getComponent(entityId, 'entityType').type === 'player';
+    });
 
-  spawnZombieAtDistance(playerPos) {
-    const { x, y } = this.calculateSpawnPosition(playerPos);
-    this.createZombie(this.ecs, this.scene, x, y, this.zombieGroup);
-  }
+    if (playerEntities.size === 0) return;
 
-  calculateSpawnPosition(playerPos) {
-    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-    return {
-      x: playerPos.x + Math.cos(angle) * this.spawnDistance,
-      y: playerPos.y + Math.sin(angle) * this.spawnDistance
-    };
+    const playerId = [...playerEntities][0];
+    const playerPos = this.ecs.getComponent(playerId, 'position');
+    const distance = 800; // Spawn 800 units away
+    const angle = Phaser.Math.Between(0, 360) * (Math.PI / 180); // Random angle in radians
+    const x = playerPos.x + Math.cos(angle) * distance;
+    const y = playerPos.y + Math.sin(angle) * distance;
+
+    const zombieId = createZombie(this.ecs, this.scene, x, y);
+    const zombieSprite = this.ecs.getComponent(zombieId, 'sprite').phaserSprite;
+    this.zombieGroup.add(zombieSprite);
   }
 
   moveZombiesTowardPlayer() {
-    const playerPos = this.getPlayerPosition();
-    if (!playerPos) return;
+    const playerEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'position', entityId => {
+      return this.ecs.getComponent(entityId, 'entityType').type === 'player';
+    });
 
-    const zombies = this.getZombieEntities();
-    for (const entityId of zombies) {
-      this.updateZombieMovement(entityId, playerPos);
-    }
-  }
+    if (playerEntities.size === 0) return;
 
-  getZombieEntities() {
-    return this.ecs.queryManager.getEntitiesWith(
-      'position', 'movement', 'entityType', 'physicsBody',
-      id => this.ecs.getComponent(id, 'entityType')?.type === 'zombie'
-    );
-  }
+    const playerId = [...playerEntities][0];
+    const playerPos = this.ecs.getComponent(playerId, 'position');
 
-  updateZombieMovement(entityId, playerPos) {
-    const pos = this.ecs.getComponent(entityId, 'position');
-    const move = this.ecs.getComponent(entityId, 'movement');
-    const physicsBody = this.ecs.getComponent(entityId, 'physicsBody').body;
+    const zombieEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'movement', 'position', 'physicsBody', entityId => {
+      return this.ecs.getComponent(entityId, 'entityType').type === 'zombie';
+    });
 
-    const velocity = this.calculateZombieVelocity(pos, playerPos);
-    this.applyVelocity(physicsBody, move, velocity);
-    this.syncPositionWithPhysics(pos, physicsBody);
-  }
+    zombieEntities.forEach(zombieId => {
+      const zombiePos = this.ecs.getComponent(zombieId, 'position');
+      const movement = this.ecs.getComponent(zombieId, 'movement');
+      const body = this.ecs.getComponent(zombieId, 'physicsBody').body;
 
-  calculateZombieVelocity(zombiePos, playerPos) {
-    const dx = playerPos.x - zombiePos.x;
-    const dy = playerPos.y - zombiePos.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance === 0) return { x: 0, y: 0 };
-
-    return {
-      x: (dx / distance) * this.zombieSpeed,
-      y: (dy / distance) * this.zombieSpeed
-    };
-  }
-
-  applyVelocity(physicsBody, move, velocity) {
-    physicsBody.setVelocity(velocity.x, velocity.y);
-    move.velocity.x = velocity.x;
-    move.velocity.y = velocity.y;
-  }
-
-  syncPositionWithPhysics(pos, physicsBody) {
-    pos.x = physicsBody.x;
-    pos.y = physicsBody.y;
+      const angle = Phaser.Math.Angle.Between(zombiePos.x, zombiePos.y, playerPos.x, playerPos.y);
+      body.setVelocity(
+        Math.cos(angle) * movement.speed,
+        Math.sin(angle) * movement.speed
+      );
+    });
   }
 }

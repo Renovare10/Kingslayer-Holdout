@@ -47,6 +47,8 @@ export default class MainScene extends Phaser.Scene {
 
     // Add zombie-zombie collision
     this.physics.add.collider(zombieGroup, zombieGroup);
+
+    // Add bullet-zombie collision (to be handled in BulletSystem)
   }
 
   update() {
