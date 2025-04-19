@@ -4,7 +4,7 @@ import Angle from '../components/Angle.js';
 import { createMovement } from '../components/Movement.js';
 import { createEntityType } from '../components/EntityType.js';
 
-export default function createBullet(ecs, scene, x, y, angle = 0) {
+export default function createBullet(ecs, scene, x, y, angle = 0, speed = 500) {
   const bulletId = ecs.createEntity();
   ecs.addComponent(bulletId, 'position', new Position(x, y));
   const size = new Size(14, 3);
@@ -12,14 +12,14 @@ export default function createBullet(ecs, scene, x, y, angle = 0) {
   // Create a 14x3 black rectangle and add physics
   const rectangle = scene.add.rectangle(x, y, size.width, size.height, 0x000000);
   rectangle.setOrigin(0.5);
-  rectangle.setRotation(angle); // Rotate to the angle
+  rectangle.setRotation(angle);
   scene.physics.add.existing(rectangle);
   rectangle.body.setSize(size.width, size.height);
   ecs.addComponent(bulletId, 'sprite', { phaserSprite: rectangle });
-  ecs.addComponent(bulletId, 'movement', createMovement(500)); // Speed 500
+  ecs.addComponent(bulletId, 'movement', createMovement(speed));
   ecs.addComponent(bulletId, 'entityType', createEntityType('bullet'));
   ecs.addComponent(bulletId, 'physicsBody', { body: rectangle.body });
-  ecs.addComponent(bulletId, 'angle', new Angle(angle)); // Use Angle component
+  ecs.addComponent(bulletId, 'angle', new Angle(angle));
   ecs.initEntity(bulletId);
   return bulletId;
 }

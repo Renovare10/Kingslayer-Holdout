@@ -14,7 +14,7 @@ export class BulletSystem {
       const body = ecs.getComponent(bulletId, 'physicsBody').body;
 
       // Set velocity based on angle and speed
-      const speed = movement.speed; // 500
+      const speed = movement.speed;
       body.setVelocity(
         Math.cos(angle) * speed,
         Math.sin(angle) * speed
