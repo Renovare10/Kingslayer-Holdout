@@ -6,7 +6,7 @@ index.html: Full-screen setup with no margins, removed Cloudflare script tags fo
 src/main.js: Phaser config (AUTO, full-screen, RESIZE mode, autoCenter: CENTER_BOTH).
 src/scenes/:
 PreloaderScene.js: Loads assets (e.g., 20 player frames, zombie sprite).
-MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, manages UI via UIManager.
+MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, initializes UI via UIManager.
 
 
 src/components/:
@@ -40,9 +40,10 @@ Bullet.js: Creates bullet with position, angle, velocity, lifespan.
 
 
 src/utils/:
-ECSManager.js: Core ECS (entity/component/system management, events).
+ECSManager.js: Core ECS (entity/component/system management, delegates events to EventManager).
 QueryManager.js: Component-based queries with filtering.
-UIManager.js: Manages UI components (e.g., health text), handles creation, positioning, and updates.
+UIManager.js: Manages UI components (e.g., health text, game over placeholder), handles creation, positioning, and updates.
+EventManager.js: Manages event emission and subscription for complex events (e.g., healthChanged, gameOver).
 SystemManager.js: Initializes and manages ECS systems.
 PhysicsManager.js: Manages physics groups (zombieGroup, bulletGroup) and collision setup (player-red box, player-zombie, zombie-zombie, bullet-zombie).
 animations.js: Defines ‘idle’ animation (unused for red box).
@@ -58,9 +59,10 @@ Zombies: Spawn every 2s, 800 units from player, move toward player (speed 60) us
 Bullets: 14x3 black rectangles, spawn at player’s center, rotate and move toward mouse click position (speed 3500, using Angle component), despawn after 1s (using Lifespan component), destroy zombies on collision via PhysicsManager.js.
 Static Red Box: At (600, 600), 50x50, non-ECS physics object, collides with player.
 Camera: Follows player, full-screen, background #E7C8A2, zoom 0.4.
-UI: Managed by UIManager, handles "Health: X" text in the top-left corner, dynamically positioned for viewport resizing and autoCenter: CENTER_BOTH.
+UI: Managed by UIManager, handles "Health: X" text in the top-left corner (dynamically positioned for viewport resizing) and a placeholder for "Game Over" text (center, initially hidden, activates on gameOver event).
 Systems: All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js refactored for readability with single-responsibility functions.
 Collisions: Managed by PhysicsManager.js using Phaser physics groups (bulletGroup, zombieGroup) for efficient collision detection (player-red box, player-zombie, zombie-zombie, bullet-zombie).
+Events: Managed by EventManager.js, handling complex events like healthChanged (emitted by HealthSystem.js, listened by UIManager.js) and supporting future events like gameOver.
 
 Methodology
 
@@ -74,12 +76,14 @@ Notes
 
 Assets: PreloaderScene.js loads player frames (survivor-idle_handgun_0.png to _19.png), zombie (zombie.png).
 Recent Changes:
-Moved bullet-zombie collision handling from BulletSystem.js to PhysicsManager.js, improving efficiency by using a single physics.add.overlap call.
+Moved UI component initialization (health text, game over placeholder) from MainScene.js to UIManager.js, keeping MainScene.js lean.
+Added EventManager.js to handle complex events (e.g., healthChanged, gameOver), replacing basic event handling in ECSManager.js.
+Moved bullet-zombie collision handling from BulletSystem.js to PhysicsManager.js, improving efficiency with a single physics.add.overlap call.
 Fixed ECS query syntax in PlayerShootingSystem.js, BulletSystem.js, and ZombieSystem.js to pass component names as separate strings, resolving empty query results.
 Updated ZombieSystem.js to correctly pass zombieGroup to createZombie, fixing zombie spawning.
-Updated Player movement speed to 100 (was 200).
-Updated Zombie movement speed to 60 (was 100).
-Bullet speed set to 3500, passed as a parameter to createBullet.
+Updated player movement speed to 100 (was 200).
+Updated zombie movement speed to 60 (was 100).
+Set bullet speed to 3500, passed as a parameter to createBullet.
 Added Lifespan.js component; bullets despawn after 1s (1000ms).
 Changed zombie collider to square (setSize(250, 250)) instead of circular (setCircle(125)).
 Added Health.js component and HealthSystem.js for player health (100 HP, 10 HP damage per zombie collision, 1-second invincibility).
@@ -94,8 +98,7 @@ Removed debug console logs from MainScene.js, PlayerShootingSystem.js, BulletSys
 Challenges:
 
 Add shooting cooldown (0.2s, as per original design) to PlayerShootingSystem.js.
-Add game over condition when health reaches 0 (display "Game Over" text) in UIManager.js.
-Separate EventManager.js for complex events (e.g., healthChanged, gameOver).
+Add game over condition when health reaches 0 (emit gameOver event in HealthSystem.js, display "Game Over" text in UIManager.js).
 Add multiple shooters (e.g., turrets) with 'shooting' component.
 Revisit sprite centering by editing artwork or adjusting offsets.
 
