@@ -75,26 +75,10 @@ Version Control: GitHub, main branch, frequent commits.
 Notes
 
 Assets: PreloaderScene.js loads player frames (survivor-idle_handgun_0.png to _19.png), zombie (zombie.png).
-Recent Changes:
-Moved UI component initialization (health text, game over text) from MainScene.js to UIManager.js, keeping MainScene.js lean.
-Refactored UIManager.js to use custom positionFn for each UI text element (health, gameOver), replacing the 4-quadrant positioning system while preserving existing position calculations.
-Added EventManager.js to handle complex events (e.g., healthChanged, gameOver), replacing basic event handling in ECSManager.js.
-Moved bullet-zombie collision handling from BulletSystem.js to PhysicsManager.js, improving efficiency with a single physics.add.overlap call.
-Fixed ECS query syntax in PlayerShootingSystem.js, BulletSystem.js, and ZombieSystem.js to pass component names as separate strings, resolving empty query results.
-Updated ZombieSystem.js to correctly pass zombieGroup to createZombie, fixing zombie spawning.
-Updated player movement speed to 100 (was 200).
-Updated zombie movement speed to 60 (was 100).
-Set bullet speed to 3500, passed as a parameter to createBullet.
-Added Lifespan.js component; bullets despawn after 1s (1000ms).
-Changed zombie collider to square (setSize(250, 250)) instead of circular (setCircle(125)).
-Added Health.js component and HealthSystem.js for player health (100 HP, 10 HP damage per zombie collision, 1-second invincibility).
-Added UIManager.js for UI components; health text dynamically positioned in top-left corner.
-Added SystemManager.js to initialize ECS systems.
-Added PhysicsManager.js to manage physics groups and collisions.
-Removed Cloudflare script tags from index.html, resolving 404 errors for /cdn-cgi/challenge-platform/scripts/jsd/main.js.
-Removed debug console logs from MainScene.js, PlayerShootingSystem.js, BulletSystem.js, QueryManager.js, and PhysicsManager.js.
 
+Zombies
 
+Spawn dynamically with a quadratic base interval decreasing from 2s to 0.5s over 5 minutes, modified by a sine wave (±1.25s amplitude, 20s period, non-linear scaling for slow buildup and sharp decline). 10% chance per spawn to trigger a cluster of 2–5 zombies within a 200-unit radius, capped at 150 total zombies. Zombies spawn 800 units from the player at a random angle, move toward the player (speed 60) using physics velocity, and use zombie.png with a square collider (setSize(250, 250)). Collide with player, each other, and bullets via physics groups in PhysicsManager.js. ZombieSystem.js is refactored into short, single-responsibility functions for clarity and readability.
 
 Challenges
 
