@@ -1,5 +1,5 @@
 // src/systems/PlayerMovementSystem.js
-export class PlayerMovementSystem {
+export default class PlayerMovementSystem {
   constructor(scene) {
     this.scene = scene;
   }

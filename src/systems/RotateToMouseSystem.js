@@ -1,4 +1,4 @@
-export class RotateToMouseSystem {
+export default class RotateToMouseSystem {
   constructor(scene) {
     this.scene = scene;
   }

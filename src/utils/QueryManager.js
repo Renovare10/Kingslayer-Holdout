@@ -24,13 +24,17 @@ export default class QueryManager {
     if (!this.ecs) {
       throw new Error('QueryManager not initialized with ECS');
     }
-    if (componentNames.length === 0) return new Set();
+    if (componentNames.length === 0) {
+      return new Set();
+    }
 
     const sets = componentNames
       .filter(name => this.componentIndex.has(name))
       .map(name => this.componentIndex.get(name));
     
-    if (sets.length === 0) return new Set();
+    if (sets.length === 0) {
+      return new Set();
+    }
     
     return new Set([...sets[0]]
       .filter(id => sets.every(set => set.has(id)))
