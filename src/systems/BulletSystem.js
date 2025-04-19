@@ -3,94 +3,22 @@ export class BulletSystem {
     this.scene = scene;
   }
 
-  init(ecs) {
-    this.ecs = ecs;
-  }
-
-  initEntity(entityId, ecs) {
-    const spriteComp = ecs.getComponent(entityId, 'sprite');
-    const bulletSize = ecs.getComponent(entityId, 'size');
-    if (spriteComp && ecs.getComponent(entityId, 'bullet')) {
-      if (spriteComp.phaserSprite) spriteComp.phaserSprite.destroy();
-      const position = ecs.getComponent(entityId, 'position');
-      spriteComp.phaserSprite = this.scene.add.rectangle(
-        position.x,
-        position.y,
-        bulletSize.width,
-        bulletSize.height,
-        0x000000
-      ).setOrigin(0.5);
-      spriteComp.phaserSprite.setDepth(1); // Ensure visibility
-    }
-  }
-
   update(ecs) {
-    const bullets = ecs.queryManager.getEntitiesWith(
-      'bullet', 'position', 'movement', 'sprite', 'entityType',
-      id => this.ecs.getComponent(id, 'entityType')?.type === 'bullet'
-    );
-    const currentTime = Date.now();
-
-    bullets.forEach(entityId => {
-      const bullet = ecs.getComponent(entityId, 'bullet');
-      if (!bullet) return;
-
-      this.moveBullet(entityId, ecs);
-      this.rotateBullet(entityId, ecs);
-      if (!this.checkCollisions(entityId, ecs)) {
-        this.checkBulletLifespan(entityId, ecs, currentTime);
-      }
+    const bulletEntities = ecs.queryManager.getEntitiesWith('entityType', 'movement', 'angle', 'physicsBody', entityId => {
+      return ecs.getComponent(entityId, 'entityType').type === 'bullet';
     });
-  }
 
-  moveBullet(entityId, ecs) {
-    const position = ecs.getComponent(entityId, 'position');
-    const movement = ecs.getComponent(entityId, 'movement');
-    const sprite = ecs.getComponent(entityId, 'sprite').phaserSprite;
+    bulletEntities.forEach(bulletId => {
+      const movement = ecs.getComponent(bulletId, 'movement');
+      const angle = ecs.getComponent(bulletId, 'angle').value;
+      const body = ecs.getComponent(bulletId, 'physicsBody').body;
 
-    position.x += movement.velocity.x * (this.scene.game.loop.delta / 1000);
-    position.y += movement.velocity.y * (this.scene.game.loop.delta / 1000);
-    sprite.setPosition(position.x, position.y);
-  }
-
-  rotateBullet(entityId, ecs) {
-    const movement = ecs.getComponent(entityId, 'movement');
-    const sprite = ecs.getComponent(entityId, 'sprite').phaserSprite;
-
-    sprite.setRotation(
-      Phaser.Math.Angle.Between(0, 0, movement.velocity.x, movement.velocity.y)
-    );
-  }
-
-  checkBulletLifespan(entityId, ecs, currentTime) {
-    const bullet = ecs.getComponent(entityId, 'bullet');
-    if (currentTime - bullet.createdAt >= bullet.lifespan) {
-      ecs.destroyEntity(entityId);
-    }
-  }
-
-  checkCollisions(entityId, ecs) {
-    const bulletPos = ecs.getComponent(entityId, 'position');
-    const zombies = ecs.queryManager.getEntitiesWith(
-      'position', 'entityType',
-      id => ecs.getComponent(id, 'entityType')?.type === 'zombie'
-    );
-
-    for (const zombieId of zombies) {
-      const zombiePos = ecs.getComponent(zombieId, 'position');
-      const distance = Phaser.Math.Distance.Between(
-        bulletPos.x,
-        bulletPos.y,
-        zombiePos.x,
-        zombiePos.y
+      // Set velocity based on angle and speed
+      const speed = movement.speed; // 500
+      body.setVelocity(
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed
       );
-
-      if (distance < 120) {
-        ecs.destroyEntity(zombieId);
-        ecs.destroyEntity(entityId);
-        return true;
-      }
-    }
-    return false;
+    });
   }
 }

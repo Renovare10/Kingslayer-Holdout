@@ -1,67 +1,27 @@
-import { createBullet } from '../entities/Bullet.js';
-import Position from '../components/Position.js';
-import Sprite from '../components/Sprite.js';
+import createBullet from '../entities/Bullet.js';
 
 export class PlayerShootingSystem {
   constructor(scene) {
     this.scene = scene;
-    this.shootEventSet = false;
-  }
-
-  init(ecs) {
-    this.ecs = ecs;
-    if (!this.shootEventSet) {
-      this.scene.input.on('pointerdown', () => {
-        const player = this.ecs.queryManager.getEntitiesWith(
-          'shooting', 'entityType',
-          id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
-        ).values().next().value;
-        if (player) {
-          this.ecs.emit('shoot', { entityId: player, target: this.scene.input.activePointer });
-        }
-      });
-      this.shootEventSet = true;
-    }
-    this.ecs.on('shoot', ({ entityId, target }) => this.tryShoot(entityId, target));
-  }
-
-  tryShoot(entityId, target) {
-    const shooting = this.ecs.getComponent(entityId, 'shooting');
-    if (!shooting.enabled || shooting.currentCooldown > 0) return;
-
-    const position = this.ecs.getComponent(entityId, 'position');
-    const sprite = this.ecs.getComponent(entityId, 'sprite').phaserSprite;
-
-    // Use sprite's exact position to ensure centering
-    const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, target.worldX, target.worldY);
-    const speed = 4000;
-    const velocity = {
-      x: Math.cos(angle) * speed,
-      y: Math.sin(angle) * speed
-    };
-
-    // Spawn bullet at sprite's center
-    createBullet(this.ecs, this.scene, sprite.x, sprite.y, velocity);
-
-    shooting.currentCooldown = shooting.cooldown;
+    this.scene.input.on('pointerdown', (pointer) => this.handleClick(pointer));
   }
 
   update(ecs) {
-    const player = ecs.queryManager.getEntitiesWith(
-      'shooting', 'entityType',
-      id => this.ecs.getComponent(id, 'entityType')?.type === 'player'
-    ).values().next().value;
-    if (!player) return;
-
-    const shooting = ecs.getComponent(player, 'shooting');
-    if (shooting.currentCooldown > 0) {
-      shooting.currentCooldown -= this.scene.game.loop.delta / 1000;
-      if (shooting.currentCooldown < 0) shooting.currentCooldown = 0;
-    }
+    this.ecs = ecs;
   }
 
-  initEntity(entityId, ecs) {
-    const sprite = ecs.getComponent(entityId, 'sprite')?.phaserSprite;
-    if (sprite) sprite.setOrigin(0.5);
+  handleClick(pointer) {
+    const playerEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'sprite', entityId => {
+      return this.ecs.getComponent(entityId, 'entityType').type === 'player';
+    });
+
+    playerEntities.forEach(playerId => {
+      const sprite = this.ecs.getComponent(playerId, 'sprite').phaserSprite;
+      // Convert mouse click to world coordinates
+      const worldPoint = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      // Calculate angle to mouse click in world space
+      const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, worldPoint.x, worldPoint.y);
+      createBullet(this.ecs, this.scene, sprite.x, sprite.y, angle);
+    });
   }
 }
