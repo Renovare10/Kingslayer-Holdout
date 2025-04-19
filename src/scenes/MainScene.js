@@ -35,6 +35,11 @@ export default class MainScene extends Phaser.Scene {
     // Initialize UI
     this.uiManager = new UIManager(this, this.ecs);
     this.uiManager.initialize();
+
+    // Pause game on game over
+    this.ecs.on('gameOver', () => {
+      this.scene.pause();
+    });
   }
 
   update() {

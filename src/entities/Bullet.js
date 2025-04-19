@@ -8,7 +8,7 @@ import { createEntityType } from '../components/EntityType.js';
 export default function createBullet(ecs, scene, x, y, angle = 0, speed = 3500, bulletGroup) {
   const bulletId = ecs.createEntity();
   ecs.addComponent(bulletId, 'position', new Position(x, y));
-  const size = new Size(14, 3);
+  const size = new Size(18, 6);
   ecs.addComponent(bulletId, 'size', size);
   // Create a 14x3 black rectangle and add physics
   const rectangle = scene.add.rectangle(x, y, size.width, size.height, 0x000000);

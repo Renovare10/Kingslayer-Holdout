@@ -33,7 +33,8 @@ export default class PlayerShootingSystem {
       const worldPoint = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y);
       // Calculate angle to mouse click in world space
       const angle = Phaser.Math.Angle.Between(sprite.x, sprite.y, worldPoint.x, worldPoint.y);
-      createBullet(this.ecs, this.scene, sprite.x, sprite.y, angle, 3500, this.bulletGroup);
+      const bulletSpeed = 2000;
+      createBullet(this.ecs, this.scene, sprite.x, sprite.y, angle, bulletSpeed, this.bulletGroup);
     });
   }
 }
