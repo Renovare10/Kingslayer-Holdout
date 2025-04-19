@@ -42,7 +42,7 @@ Bullet.js: Creates bullet with position, angle, velocity, lifespan.
 src/utils/:
 ECSManager.js: Core ECS (entity/component/system management, delegates events to EventManager).
 QueryManager.js: Component-based queries with filtering.
-UIManager.js: Manages UI components (e.g., health text, game over placeholder), handles creation, positioning, and updates.
+UIManager.js: Manages UI components (e.g., health text, game over text), handles creation, positioning, and updates. Each UI text element (health, gameOver) uses a custom positionFn to compute its position independently, replacing the previous 4-quadrant positioning system.
 EventManager.js: Manages event emission and subscription for complex events (e.g., healthChanged, gameOver).
 SystemManager.js: Initializes and manages ECS systems.
 PhysicsManager.js: Manages physics groups (zombieGroup, bulletGroup) and collision setup (player-red box, player-zombie, zombie-zombie, bullet-zombie).
@@ -59,10 +59,10 @@ Zombies: Spawn every 2s, 800 units from player, move toward player (speed 60) us
 Bullets: 14x3 black rectangles, spawn at player’s center, rotate and move toward mouse click position (speed 3500, using Angle component), despawn after 1s (using Lifespan component), destroy zombies on collision via PhysicsManager.js.
 Static Red Box: At (600, 600), 50x50, non-ECS physics object, collides with player.
 Camera: Follows player, full-screen, background #E7C8A2, zoom 0.4.
-UI: Managed by UIManager, handles "Health: X" text in the top-left corner (dynamically positioned for viewport resizing) and a placeholder for "Game Over" text (center, initially hidden, activates on gameOver event).
+UI: Managed by UIManager, handles "Health: X" text in the top-left corner (dynamically positioned using a custom positionFn) and "Game Over" text (vertically centered, flush right, initially hidden, activates on gameOver event using a custom positionFn).
 Systems: All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js refactored for readability with single-responsibility functions.
 Collisions: Managed by PhysicsManager.js using Phaser physics groups (bulletGroup, zombieGroup) for efficient collision detection (player-red box, player-zombie, zombie-zombie, bullet-zombie).
-Events: Managed by EventManager.js, handling complex events like healthChanged (emitted by HealthSystem.js, listened by UIManager.js) and supporting future events like gameOver.
+Events: Managed by EventManager.js, handling complex events like healthChanged (emitted by HealthSystem.js, listened by UIManager.js) and gameOver (emitted by HealthSystem.js, activates "Game Over" text in UIManager.js).
 
 Methodology
 
@@ -76,7 +76,8 @@ Notes
 
 Assets: PreloaderScene.js loads player frames (survivor-idle_handgun_0.png to _19.png), zombie (zombie.png).
 Recent Changes:
-Moved UI component initialization (health text, game over placeholder) from MainScene.js to UIManager.js, keeping MainScene.js lean.
+Moved UI component initialization (health text, game over text) from MainScene.js to UIManager.js, keeping MainScene.js lean.
+Refactored UIManager.js to use custom positionFn for each UI text element (health, gameOver), replacing the 4-quadrant positioning system while preserving existing position calculations.
 Added EventManager.js to handle complex events (e.g., healthChanged, gameOver), replacing basic event handling in ECSManager.js.
 Moved bullet-zombie collision handling from BulletSystem.js to PhysicsManager.js, improving efficiency with a single physics.add.overlap call.
 Fixed ECS query syntax in PlayerShootingSystem.js, BulletSystem.js, and ZombieSystem.js to pass component names as separate strings, resolving empty query results.
@@ -95,12 +96,9 @@ Removed debug console logs from MainScene.js, PlayerShootingSystem.js, BulletSys
 
 
 
-Challenges:
+Challenges
 
-Add shooting cooldown (0.2s, as per original design) to PlayerShootingSystem.js.
-Add game over condition when health reaches 0 (emit gameOver event in HealthSystem.js, display "Game Over" text in UIManager.js).
-Add multiple shooters (e.g., turrets) with 'shooting' component.
 Revisit sprite centering by editing artwork or adjusting offsets.
 
 Context Format
-Updates provided as Markdown in  tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
+Updates provided as Markdown in <DOCUMENT> tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
