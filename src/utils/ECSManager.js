@@ -1,4 +1,5 @@
 import QueryManager from './QueryManager.js';
+import EventManager from './EventManager.js';
 
 export default class ECSManager {
   constructor() {
@@ -6,8 +7,8 @@ export default class ECSManager {
     this.components = new Map();
     this.systems = [];
     this.queryManager = new QueryManager(this);
+    this.eventManager = new EventManager();
     this.nextId = 1;
-    this.events = new Map(); // Event listeners
   }
 
   createEntity() {
@@ -73,13 +74,10 @@ export default class ECSManager {
   }
 
   emit(eventName, data) {
-    if (this.events.has(eventName)) {
-      this.events.get(eventName).forEach(callback => callback(data));
-    }
+    this.eventManager.emit(eventName, data);
   }
 
   on(eventName, callback) {
-    if (!this.events.has(eventName)) this.events.set(eventName, new Set());
-    this.events.get(eventName).add(callback);
+    return this.eventManager.on(eventName, callback);
   }
 }
