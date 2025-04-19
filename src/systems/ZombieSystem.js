@@ -45,26 +45,33 @@ export class ZombieSystem {
     const playerEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'position', entityId => {
       return this.ecs.getComponent(entityId, 'entityType').type === 'player';
     });
-
+  
     if (playerEntities.size === 0) return;
-
+  
     const playerId = [...playerEntities][0];
     const playerPos = this.ecs.getComponent(playerId, 'position');
-
+  
     const zombieEntities = this.ecs.queryManager.getEntitiesWith('entityType', 'movement', 'position', 'physicsBody', entityId => {
       return this.ecs.getComponent(entityId, 'entityType').type === 'zombie';
     });
-
+  
     zombieEntities.forEach(zombieId => {
       const zombiePos = this.ecs.getComponent(zombieId, 'position');
       const movement = this.ecs.getComponent(zombieId, 'movement');
       const body = this.ecs.getComponent(zombieId, 'physicsBody').body;
-
+  
+      // Calculate angle to player every frame
       const angle = Phaser.Math.Angle.Between(zombiePos.x, zombiePos.y, playerPos.x, playerPos.y);
-      body.setVelocity(
-        Math.cos(angle) * movement.speed,
-        Math.sin(angle) * movement.speed
-      );
+      
+      // Calculate target velocity
+      const velocityX = Math.cos(angle) * movement.speed;
+      const velocityY = Math.sin(angle) * movement.speed;
+  
+      // Set velocity
+      body.setVelocity(velocityX, velocityY);
+  
+      // Debug logging
+      console.log(`Zombie ${zombieId}: Pos(${zombiePos.x.toFixed(2)}, ${zombiePos.y.toFixed(2)}), Angle: ${(angle * 180 / Math.PI).toFixed(2)}°, Velocity: (${velocityX.toFixed(2)}, ${velocityY.toFixed(2)})`);
     });
   }
 }

@@ -10,7 +10,7 @@ export default function createZombie(ecs, scene, x, y) {
   const sprite = scene.physics.add.sprite(x, y, 'zombie').setOrigin(0.5);
   sprite.setSize(250, 250); // Square collider matching sprite size
   ecs.addComponent(zombieId, 'sprite', { phaserSprite: sprite });
-  ecs.addComponent(zombieId, 'movement', createMovement(100)); // Speed 100
+  ecs.addComponent(zombieId, 'movement', createMovement(60));
   ecs.addComponent(zombieId, 'entityType', createEntityType('zombie'));
   ecs.addComponent(zombieId, 'physicsBody', { body: sprite.body });
   ecs.initEntity(zombieId);

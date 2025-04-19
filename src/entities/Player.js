@@ -22,7 +22,7 @@ export default function createPlayer(ecs, scene, x, y) {
   
   ecs.addComponent(playerId, 'sprite', sprite);
   ecs.addComponent(playerId, 'rotatetomouse', createRotateToMouse());
-  ecs.addComponent(playerId, 'movement', createMovement(200));
+  ecs.addComponent(playerId, 'movement', createMovement(100));
   ecs.addComponent(playerId, 'entityType', createEntityType('player'));
   ecs.addComponent(playerId, 'physicsBody', { body: graphics.body });
   ecs.initEntity(playerId);
