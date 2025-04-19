@@ -4,11 +4,48 @@ export default class UIManager {
   constructor(scene, ecs) {
     this.scene = scene;
     this.ecs = ecs;
-    this.components = new Map(); // Map of UI components (e.g., { id: { text: Phaser.Text, update: fn } })
+    this.components = new Map();
+  }
+
+  initialize() {
+    // Health UI component
+    this.addComponent('health', {
+      text: 'Health: 100',
+      position: 'top-left',
+      font: '80px Arial',
+      fill: '#000000',
+      depth: 100,
+      updateFn: (id, uiManager) => {
+        uiManager.ecs.on('healthChanged', ({ health }) => {
+          const component = uiManager.components.get(id);
+          if (component) {
+            component.text.setText(`Health: ${health}`);
+          }
+        });
+      }
+    });
+
+    // Game over UI component (initially hidden)
+    this.addComponent('gameOver', {
+      text: 'Game Over',
+      position: 'center',
+      font: '100px Arial',
+      fill: '#ff0000',
+      depth: 200,
+      visible: false,
+      updateFn: (id, uiManager) => {
+        uiManager.ecs.on('gameOver', () => {
+          const component = uiManager.components.get(id);
+          if (component) {
+            component.text.setVisible(true);
+          }
+        });
+      }
+    });
   }
 
   addComponent(id, config) {
-    const { text, position = 'top-left', font = '80px Arial', fill = '#000000', depth = 100, updateFn } = config;
+    const { text, position = 'top-left', font = '80px Arial', fill = '#000000', depth = 100, updateFn, visible = true } = config;
 
     // Create the Phaser text object
     const textObject = this.scene.add.text(0, 0, text, {
@@ -16,11 +53,15 @@ export default class UIManager {
       fill: fill
     }).setScrollFactor(0).setDepth(depth);
 
+    if (!visible) {
+      textObject.setVisible(false);
+    }
+
     // Store the component
     this.components.set(id, {
       text: textObject,
       position: position,
-      update: updateFn || (() => {}) // Default to no-op if no update function provided
+      update: updateFn || (() => {})
     });
 
     // Set initial position

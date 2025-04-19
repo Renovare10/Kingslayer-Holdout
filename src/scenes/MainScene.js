@@ -32,26 +32,9 @@ export default class MainScene extends Phaser.Scene {
     // Setup camera
     setupCamera(this, playerSprite, '#E7C8A2', 0.4);
 
-    // Create UI Manager
+    // Initialize UI
     this.uiManager = new UIManager(this, this.ecs);
-
-    // Add health UI component
-    this.uiManager.addComponent('health', {
-      text: 'Health: 100',
-      position: 'top-left',
-      font: '80px Arial',
-      fill: '#000000',
-      depth: 100,
-      updateFn: (id, uiManager) => {
-        // Listen for health changes
-        uiManager.ecs.on('healthChanged', ({ health }) => {
-          const component = uiManager.components.get(id);
-          if (component) {
-            component.text.setText(`Health: ${health}`);
-          }
-        });
-      }
-    });
+    this.uiManager.initialize();
   }
 
   update() {
