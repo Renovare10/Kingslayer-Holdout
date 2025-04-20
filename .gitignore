@@ -35,3 +35,6 @@ Thumbs.db
 *.cache
 package-lock.json
 node_modules/.package-lock.json
+
+# Local Netlify folder
+.netlify
