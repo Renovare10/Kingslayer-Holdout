@@ -1,5 +1,4 @@
 import createBullet from '../entities/Bullet.js';
-import Shooting from '../components/Shooting.js';
 
 /**
  * Manages player shooting mechanics, including click and continuous firing with a cooldown.
