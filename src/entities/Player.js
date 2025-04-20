@@ -4,6 +4,7 @@ import { createRotateToMouse } from '../components/RotateToMouse.js';
 import { createMovement } from '../components/Movement.js';
 import { createEntityType } from '../components/EntityType.js';
 import Health from '../components/Health.js';
+import Shooting from '../components/Shooting.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
@@ -26,9 +27,8 @@ export default function createPlayer(ecs, scene, x, y) {
   ecs.addComponent(playerId, 'movement', createMovement(100));
   ecs.addComponent(playerId, 'entityType', createEntityType('player'));
   ecs.addComponent(playerId, 'physicsBody', { body: graphics.body });
-  
-  // Add health component
   ecs.addComponent(playerId, 'health', new Health(100, 100)); // 100 HP, max 100
+  ecs.addComponent(playerId, 'shooting', new Shooting(200)); // Cooldown of 200ms
   
   ecs.initEntity(playerId);
   return playerId;
