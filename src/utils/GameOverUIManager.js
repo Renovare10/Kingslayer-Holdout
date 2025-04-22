@@ -15,18 +15,14 @@ export default class GameOverUIManager {
    */
   initialize() {
     this.addComponent('restartSquare', {
-      width: 100,
-      height: 100,
+      width: 75,
+      height: 75,
       fillColor: 0x333333,
       depth: 150,
       positionFn: () => ({
         offsetX: this.scene.game.scale.width / 2,
         offsetY: this.scene.game.scale.height / 2
       }),
-      onClick: () => {
-        this.ecs.emit('restartGame');
-        this.scene.scene.stop();
-      }
     });
 
     this.addComponent('gameOverText', {
@@ -44,7 +40,7 @@ export default class GameOverUIManager {
     this.addComponent('lowerRectangle', {
       width: 400,
       height: 80,
-      fillColor: 0x02343F, // Changed from '#E3C170' to '#02343F'
+      fillColor: 0x02343F, 
       depth: 190,
       positionFn: (obj, width, height) => ({
         offsetX: width / 1.48 - obj.width / 2,
