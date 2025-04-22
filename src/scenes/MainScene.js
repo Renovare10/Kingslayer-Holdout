@@ -51,7 +51,7 @@ export default class MainScene extends Phaser.Scene {
     // Pause game and start GameOverScene on game over
     this.ecs.on('gameOver', () => {
       this.scene.pause();
-      this.scene.start('GameOverScene', { ecs: this.ecs, sceneManager: this.sceneManager });
+      this.scene.launch('GameOverScene', { ecs: this.ecs, sceneManager: this.sceneManager });
     });
 
     // Restart game on restartGame event

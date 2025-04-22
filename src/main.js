@@ -8,6 +8,8 @@ const config = {
     width: window.innerWidth,
     height: window.innerHeight,
     parent: 'game-container',
+    backgroundColor: 0xff0000,
+    transparent: true,
     scene: [
         // Setup Scenes
         PreloaderScene,

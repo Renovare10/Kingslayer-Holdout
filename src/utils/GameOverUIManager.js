@@ -19,6 +19,10 @@ export default class GameOverUIManager {
       height: 100,
       fillColor: 0x333333,
       depth: 150,
+      positionFn: () => ({
+        offsetX: this.scene.game.scale.width / 2,
+        offsetY: this.scene.game.scale.height / 2
+      }),
       onClick: () => {
         this.ecs.emit('restartGame');
         this.scene.scene.stop();
@@ -27,13 +31,48 @@ export default class GameOverUIManager {
 
     this.addComponent('gameOverText', {
       text: 'Game Over',
-      font: '150px Arial',
-      fill: '#ffffff',
+      font: '75px Arial',
+      fill: '#02343F',
       depth: 200,
       positionFn: (obj, width, height) => ({
         offsetX: width / 2 - obj.width / 2, // Center horizontally
         offsetY: height / 2 - 100 - obj.height / 1.1 // 100px above square
       })
+    });
+
+    // New rectangle component
+    this.addComponent('lowerRectangle', {
+      width: 400, // Fixed width, tweak as needed
+      height: 80, // Fixed height, thinner for horizontal look
+      fillColor: '#E3C170', // Lighter gray
+      depth: 190,
+      positionFn: (obj, width, height) => ({
+        offsetX: width / 1.48 - obj.width / 2, // Center horizontally
+        offsetY: height / 1.4 // 100px below square
+      }),
+      onClick: () => {
+        this.ecs.emit('restartGame');
+        this.scene.scene.stop();
+      }
+    });
+
+    // New text component for "Continue"
+    this.addComponent('continueText', {
+      text: 'Continue',
+      font: '40px Arial',
+      fill: '#F0EDCC',
+      depth: 195,
+      positionFn: (obj, width, height) => {
+        const rectComponent = this.components.get('lowerRectangle');
+        const rectObj = rectComponent?.obj;
+        const rectPos = rectObj
+          ? { x: rectObj.x, y: rectObj.y, width: rectObj.width, height: rectObj.height }
+          : { x: width / 1.48 - 400 / 2, y: height / 1.4, width: 400, height: 80 };
+        return {
+          offsetX: rectPos.x + rectPos.width / 12 - obj.width / 1.4, // Center horizontally in rectangle
+          offsetY: rectPos.y + rectPos.height / 2 - obj.height / 0.7 // Center vertically in rectangle
+        };
+      }
     });
   }
 

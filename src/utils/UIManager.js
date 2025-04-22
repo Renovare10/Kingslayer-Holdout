@@ -27,27 +27,6 @@ export default class UIManager {
         });
       }
     });
-
-    this.addComponent('gameOver', {
-      text: 'Game Over',
-      positionFn: (text, width, height) => {
-        const offsetX = width / 2 - text.width / 2; // Flush right, 10px from edge
-        const offsetY = height / 8 - text.height / 2; // Center vertically
-        return { offsetX, offsetY };
-      },
-      font: '150px Arial',
-      fill: '#000000',
-      depth: 200,
-      visible: false,
-      updateFn: (id, uiManager) => {
-        uiManager.ecs.on('gameOver', () => {
-          const component = uiManager.components.get(id);
-          if (component) {
-            component.text.setVisible(true);
-          }
-        });
-      }
-    });
   }
 
   addComponent(id, config) {
