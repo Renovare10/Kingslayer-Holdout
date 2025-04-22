@@ -23,7 +23,7 @@ export default class HealthSystem {
       // Check for collisions with zombies
       if (health.invincibilityTimer <= 0) {
         this.scene.physics.world.overlap(playerSprite, this.zombieGroup, () => {
-          health.current -= 100;
+          health.current -= 10;
           health.invincibilityTimer = 1000; // 1 second invincibility
           if (health.current <= 0) {
             health.current = 0;
