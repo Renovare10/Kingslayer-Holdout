@@ -53,25 +53,35 @@ export default class UIManager {
   addComponent(id, config) {
     const {
       text,
+      graphics = false,
+      createFn,
       positionFn = () => ({ offsetX: 0, offsetY: 0 }),
       font = '80px Arial',
       fill = '#000000',
       depth = 100,
       updateFn,
-      visible = true
+      visible = true,
+      scrollFactor = 0
     } = config;
 
-    const textObject = this.scene.add.text(0, 0, text, {
-      font: font,
-      fill: fill
-    }).setScrollFactor(0).setDepth(depth);
+    let obj;
+    if (graphics && createFn) {
+      obj = createFn();
+    } else {
+      obj = this.scene.add.text(0, 0, text, {
+        font: font,
+        fill: fill
+      });
+    }
+
+    obj.setScrollFactor(scrollFactor).setDepth(depth);
 
     if (!visible) {
-      textObject.setVisible(false);
+      obj.setVisible(false);
     }
 
     this.components.set(id, {
-      text: textObject,
+      text: obj, // Rename to 'obj' internally for generality
       positionFn,
       update: updateFn || (() => {})
     });

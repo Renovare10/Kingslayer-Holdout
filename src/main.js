@@ -1,17 +1,27 @@
 import Phaser from 'phaser';
 import PreloaderScene from './scenes/PreloaderScene.js';
 import MainScene from './scenes/MainScene.js';
+import GameOverScene from './scenes/GameOverScene.js';
 
 const config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
     height: window.innerHeight,
     parent: 'game-container',
-    scene: [PreloaderScene,MainScene],
+    scene: [
+        // Setup Scenes
+        PreloaderScene,
+
+        // Game Scenes
+        MainScene,
+
+        // UI Scenes
+        GameOverScene
+    ],
     physics: { 
         default: 'arcade',
         arcade: {
-            gravity: { y: 0,},
+            gravity: { y: 0 },
             debug: false
         }
     },

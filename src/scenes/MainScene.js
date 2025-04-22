@@ -11,9 +11,13 @@ export default class MainScene extends Phaser.Scene {
   constructor() {
     super('MainScene');
     this.ecs = new ECSManager();
+    this.isRestarting = false;
   }
 
   create() {
+    // Clear existing animations
+    this.anims.remove('idle');
+
     createAnimations(this);
 
     // Initialize physics
@@ -36,14 +40,54 @@ export default class MainScene extends Phaser.Scene {
     this.uiManager = new UIManager(this, this.ecs);
     this.uiManager.initialize();
 
-    // Pause game on game over
+    // Store managers for cleanup
+    this.physicsManager = physicsManager;
+    this.systemManager = systemManager;
+
+    // Pause game and start GameOverScene on game over
     this.ecs.on('gameOver', () => {
       this.scene.pause();
+      this.scene.start('GameOverScene', { ecs: this.ecs });
     });
+
+    // Restart game on restartGame event
+    this.ecs.on('restartGame', () => {
+      this.isRestarting = true;
+
+      // Clean up ECS
+      this.ecs.entities.clear();
+      this.ecs.components.clear();
+      this.ecs.systems.length = 0;
+      this.ecs.queryManager.componentIndex.clear();
+      this.ecs.eventManager.clear();
+
+      // Clean up physics
+      if (this.physicsManager.zombieGroup && this.physicsManager.zombieGroup.children) {
+        this.physicsManager.zombieGroup.clear(true, true);
+      }
+      if (this.physicsManager.bulletGroup && this.physicsManager.bulletGroup.children) {
+        this.physicsManager.bulletGroup.clear(true, true);
+      }
+
+      // Clean up UI
+      this.uiManager.destroy();
+
+      // Restart scene
+      this.scene.restart();
+
+      // Nullify groups after restart
+      this.physicsManager.zombieGroup = null;
+      this.physicsManager.bulletGroup = null;
+    });
+
+    // Reset restarting flag
+    this.isRestarting = false;
   }
 
   update() {
-    this.ecs.update();
-    this.uiManager.update();
+    if (!this.isRestarting) {
+      this.ecs.update();
+      this.uiManager.update();
+    }
   }
 }
