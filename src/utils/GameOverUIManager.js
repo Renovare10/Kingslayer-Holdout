@@ -32,7 +32,7 @@ export default class GameOverUIManager {
     this.addComponent('gameOverText', {
       text: 'Game Over',
       font: '75px Arial',
-      fill: '#02343F',
+      fill: '#000',
       depth: 200,
       positionFn: (obj, width, height) => ({
         offsetX: width / 2 - obj.width / 2, // Center horizontally
@@ -40,15 +40,15 @@ export default class GameOverUIManager {
       })
     });
 
-    // New rectangle component
+    // In the initialize method, update the lowerRectangle component
     this.addComponent('lowerRectangle', {
-      width: 400, // Fixed width, tweak as needed
-      height: 80, // Fixed height, thinner for horizontal look
-      fillColor: '#E3C170', // Lighter gray
+      width: 400,
+      height: 80,
+      fillColor: 0x02343F, // Changed from '#E3C170' to '#02343F'
       depth: 190,
       positionFn: (obj, width, height) => ({
-        offsetX: width / 1.48 - obj.width / 2, // Center horizontally
-        offsetY: height / 1.4 // 100px below square
+        offsetX: width / 1.48 - obj.width / 2,
+        offsetY: height / 1.47
       }),
       onClick: () => {
         this.ecs.emit('restartGame');
