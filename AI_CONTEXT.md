@@ -62,9 +62,16 @@ Zombies: Spawn every 2s, 800 units from player, move toward player (speed 60) us
 Bullets: 14x3 black rectangles, spawn at player’s center, rotate and move toward mouse position (speed 3500, using Angle component), despawn after 1s (using Lifespan component), destroy zombies on collision via PhysicsManager.js.
 Static Red Box: At (600, 600), 50x50, non-ECS physics object, collides with player.
 Camera: Follows player, full-screen, background #E7C8A2, zoom 0.4.
-UI:
-MainScene: Managed by UIManager, displays "Health: X" text in top-left corner (dynamic positionFn).
-GameOverScene: Managed by GameOverUIManager, displays white "Game Over" text (150px Arial, depth 200, centered horizontally, ~100px above center with custom offset) and clickable dark gray square (100x100, 0x333333, depth 150, restarts game). Black background.
+
+### UI
+- **MainScene**: Managed by `UIManager`, displays "Health: X" text in top-left corner (dynamic `positionFn`).
+- **GameOverScene**: Managed by `GameOverUIManager`, displays:
+  - White "Game Over" text (75px Arial, depth 200, centered horizontally, ~100px above center with custom offset).
+  - Clickable dark gray square (100x100, `0x333333`, depth 150, restarts game).
+  - Clickable light gray rectangle (400x80, `0x666666`, depth 190, centered horizontally with custom offset `width / 1.48 - width / 2`, positioned below center at `height / 1.4`, restarts game).
+  - Black "Continue" text (40px Arial, depth 195, centered within the light gray rectangle).
+  Black background.
+
 
 
 Systems: All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js, PlayerShootingSystem.js, and RenderSystem.js refactored for readability with single-responsibility functions and null checks.
