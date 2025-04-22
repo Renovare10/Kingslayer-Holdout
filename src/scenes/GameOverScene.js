@@ -7,8 +7,9 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   create(data) {
-    // Store ECS for EventManager access
+    // Store ECS and SceneManager
     this.ecs = data.ecs;
+    this.sceneManager = data.sceneManager;
 
     // Initialize UI
     this.uiManager = new GameOverUIManager(this, this.ecs);

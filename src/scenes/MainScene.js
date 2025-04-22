@@ -6,6 +6,7 @@ import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
 import SystemManager from '../utils/SystemManager.js';
 import PhysicsManager from '../utils/PhysicsManager.js';
+import SceneManager from '../utils/SceneManager.js';
 
 export default class MainScene extends Phaser.Scene {
   constructor() {
@@ -44,44 +45,25 @@ export default class MainScene extends Phaser.Scene {
     this.physicsManager = physicsManager;
     this.systemManager = systemManager;
 
+    // Initialize SceneManager
+    this.sceneManager = new SceneManager(this.game);
+
     // Pause game and start GameOverScene on game over
     this.ecs.on('gameOver', () => {
       this.scene.pause();
-      this.scene.start('GameOverScene', { ecs: this.ecs });
+      this.scene.start('GameOverScene', { ecs: this.ecs, sceneManager: this.sceneManager });
     });
 
     // Restart game on restartGame event
     this.ecs.on('restartGame', () => {
       this.isRestarting = true;
-
-      // Clean up ECS
-      this.ecs.entities.clear();
-      this.ecs.components.clear();
-      this.ecs.systems.length = 0;
-      this.ecs.queryManager.componentIndex.clear();
-      this.ecs.eventManager.clear();
-
-      // Clean up physics
-      if (this.physicsManager.zombieGroup && this.physicsManager.zombieGroup.children) {
-        this.physicsManager.zombieGroup.clear(true, true);
-      }
-      if (this.physicsManager.bulletGroup && this.physicsManager.bulletGroup.children) {
-        this.physicsManager.bulletGroup.clear(true, true);
-      }
-
-      // Clean up UI
-      this.uiManager.destroy();
-
-      // Restart scene
-      this.scene.restart();
-
-      // Nullify groups after restart
-      this.physicsManager.zombieGroup = null;
-      this.physicsManager.bulletGroup = null;
+      this.sceneManager.restartScene('MainScene', {
+        ecs: this.ecs,
+        physicsManager: this.physicsManager,
+        uiManager: this.uiManager
+      });
+      this.isRestarting = false;
     });
-
-    // Reset restarting flag
-    this.isRestarting = false;
   }
 
   update() {
