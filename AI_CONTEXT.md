@@ -6,7 +6,7 @@ index.html: Full-screen setup with no margins, removed Cloudflare script tags fo
 src/main.js: Phaser config (AUTO, full-screen, RESIZE mode, autoCenter: CENTER_BOTH, transparent: false).
 src/scenes/:
 PreloaderScene.js: Loads assets (e.g., 20 player frames, zombie sprite).
-MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, initializes UI via UIManager, launches HUDScene, manages scene transitions via SceneManager.
+MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, initializes UI via UIManager, launches HUDScene, manages scene transitions via SceneManager, initializes and updates GameState for dynamic settings.
 GameOverScene.js: Displays game over UI (white "Game Over" text, clickable restart square) using GameOverUIManager, stops itself and triggers MainScene restart via SceneManager.
 HUDScene.js: Displays player HUD, initializes HealthUIManager for health display, runs in parallel with MainScene.
 
@@ -29,16 +29,19 @@ src/systems/:
 RenderSystem.js: Syncs sprite positions with ECS Position for non-physics entities and with physics body for physics-enabled entities (e.g., zombies), sets depth, includes null checks for sprite.phaserSprite.
 RotateToMouseSystem.js: Rotates player to mouse, centered (no offset).
 PlayerMovementSystem.js: Moves player with WASD (speed 100).
-ZombieSystem.js: Spawns zombies every 2s, moves toward player (speed 60).
+ZombieSystem.js: Spawns zombies every 2s–0.5s (quadratic + sine wave), 10% chance for clusters (2–5 zombies within 200 units), capped at 175 total zombies (dynamic via GameState), uses ZombieFactory for creation (20% fast zombie chance), moves zombies toward player (speed 60), despawns zombies >2000 units away and respawns at 1600 units with heading bias.
 PlayerShootingSystem.js: Fires bullets on click or continuous mouse hold with a 0.2-second (200ms) cooldown, centered on player, calculates angle to mouse position in world space. Refactored for readability with private fields, single-responsibility functions, and JSDoc comments.
 BulletSystem.js: Moves bullets toward their angle at speed 3500, renders as 14x3 black rectangles, despawns bullets after lifespan.
 HealthSystem.js: Manages player health (100 HP), reduces by 10 HP per zombie collision with 1-second invincibility, emits healthChanged event.
+FlashSystem.js: Adds flash effects (implementation details not specified).
 
 
 src/entities/:
 Player.js: Creates player with red box (150x150), centered physics, adds Shooting component with 200ms cooldown.
-Zombie.js: Creates zombie with zombie.png, movement, square collider (250x250).
+Zombie.js: Creates standard zombie with zombie.png, movement, square collider (250x250).
+FastZombie.js: Creates fast zombie with zombie.png, smaller size (100x100), faster speed (120), dark yellow tint (0xCCCC00).
 Bullet.js: Creates bullet with position, angle, velocity, lifespan.
+BaseZombie.js: Base factory function for creating zombies with common components (Position, Size, Sprite, Movement, EntityType, PhysicsBody), configurable via a config object.
 
 
 src/utils/:
@@ -48,9 +51,11 @@ UIManager.js: Manages MainScene UI (e.g., health text), handles creation, positi
 HealthUIManager.js: Manages HUDScene health display (black "Health: X" text, 32px Arial), listens for healthChanged events, supports cleanup.
 GameOverUIManager.js: Manages GameOverScene UI (white "Game Over" text, clickable restart square), supports text and rectangles with positionFn.
 EventManager.js: Manages event emission and subscription for complex events (e.g., healthChanged, gameOver, restartGame).
-SystemManager.js: Initializes and manages ECS systems.
+SystemManager.js: Initializes and manages ECS systems, passes GameState to relevant systems (e.g., ZombieSystem).
 PhysicsManager.js: Manages physics groups (zombieGroup, bulletGroup) and collision setup (player-red box, player-zombie, zombie-zombie, bullet-zombie).
 SceneManager.js: Manages scene lifecycle (restart, stop), handles MainScene cleanup and restart, extensible for future scenes (e.g., PauseScene).
+GameState.js: Tracks game state (gameTime, level) and manages dynamic settings (e.g., maxZombies starts at 175 and increases by 10 every minute, spawn distances, probabilities).
+ZombieFactory.js: Centralizes zombie creation logic, supports type selection (standard, fast) with a 20% fast zombie chance, applies fade-in effect consistently.
 animations.js: Defines ‘idle’ animation (unused for red box).
 camera.js: Configures camera to follow player.
 
@@ -60,20 +65,18 @@ Current State
 
 Player: At (500, 500), 150x150 red box (scene.add.rectangle), centered (setOrigin(0.5), setCircle(75), no offset). Rotates to mouse, moves with WASD (speed 100), shoots bullets on click or continuous mouse hold (speed 3500, 200ms cooldown). Collides with static red box and zombies. No clickable UI square (removed).
 Health System: Player has 100 HP, loses 10 HP per zombie collision with a 1-second invincibility period. Health displayed via "Health: X" text in top-left corner (32px Arial, black), managed by HealthUIManager in HUDScene.
-Zombies: Spawn every 2s, 800 units from player, move toward player (speed 60) using physics velocity, use zombie.png with square collider (setSize(250, 250)). Collide with player, each other, and bullets via physics groups in PhysicsManager.js.
+Zombies: Spawn every 2s–0.5s (quadratic base interval decreasing from 2s to 0.5s over 5 minutes, modified by a sine wave with ±1.25s amplitude, 20s period, non-linear scaling for slow buildup and sharp decline), 10% chance per spawn for a cluster (2–5 zombies within 200 units), capped at 175 total zombies (dynamic via GameState, increases by 10 every minute). Spawn 1500 units from player at a random angle (via GameState settings), 20% chance to be fast zombies (smaller 100x100, speed 120, dark yellow tint 0xCCCC00). Move toward player (speed 60) using physics velocity, created via ZombieFactory with a fade-in effect (0.5s). Despawn if >2000 units away, respawn at 1600 units with a heading bias based on player velocity. Collide with player, each other, and bullets via physics groups in PhysicsManager.js.
 Bullets: 14x3 black rectangles, spawn at player’s center, rotate and move toward mouse position (speed 3500, using Angle component), despawn after 1s (using Lifespan component), destroy zombies on collision via PhysicsManager.js.
 Static Red Box: At (600, 600), 50x50, non-ECS physics object, collides with player.
 Camera: Follows player, full-screen, background #E7C8A2, zoom 0.4.
 HUD: Managed by HUDScene, displays health via HealthUIManager, runs in parallel with MainScene, listens for healthChanged events.
+Game State: Managed by GameState.js, tracks gameTime (in seconds) and level (currently 1, for future XP system). Provides dynamic settings (e.g., maxZombies increases over time, spawn distances, probabilities) via getSettings().
 
 UI
 
 MainScene: Managed by UIManager, displays legacy health text (to be phased out).
-
 HUDScene: Managed by HealthUIManager, displays "Health: X" text (32px Arial, black, top-left at (10, 10), scrollFactor 0), updates via healthChanged events.
-
 GameOverScene: Managed by GameOverUIManager, displays:
-
 White "Game Over" text (75px Arial, depth 200, centered horizontally, ~100px above center with custom offset).
 Clickable dark gray square (100x100, 0x333333, depth 150, restarts game).
 Clickable light gray rectangle (400x80, 0x666666, depth 190, centered horizontally with custom offset width / 1.48 - width / 2, positioned below center at height / 1.4, restarts game).
@@ -81,26 +84,23 @@ Black "Continue" text (40px Arial, depth 195, centered within the light gray rec
 Black background.
 
 
-Systems: All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js, PlayerShootingSystem.js, and RenderSystem.js refactored for readability with single-responsibility functions and null checks.
+
+Systems
+All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js, PlayerShootingSystem.js, and RenderSystem.js refactored for readability with single-responsibility functions and null checks.
 
 Collisions: Managed by PhysicsManager.js using Phaser physics groups (bulletGroup, zombieGroup) for efficient collision detection (player-red box, player-zombie, zombie-zombie, bullet-zombie).
-
 Events: Managed by EventManager.js, handling complex events:
-
 healthChanged: Emitted by HealthSystem.js, listened by HealthUIManager.js for health text.
 gameOver: Emitted by HealthSystem.js, triggers MainScene pause and GameOverScene start.
-restartGame: Emitted by GameOverScene.js (on square click), triggers MainScene restart via SceneManager.
+restartGame: Emitted by GameOverScene.js (on square click), triggers MainScene restart via SceneManager, resets GameState.
 
 
 Scene Management: Managed by SceneManager.js, handles MainScene cleanup/restart (ECS, physics, UI) and GameOverScene stopping, extensible for future scenes.
-
 
 Methodology
 
 ECS: Entities (IDs), components (data), systems (logic).
 Key ECS Functions: createEntity, addComponent, getComponent, removeComponent, destroyEntity, addSystem, update, initEntity, queryManager.getEntitiesWith, emit, on.
-
-
 Design: Logic in systems/utils, lean scenes, one concept per file.
 JS: ES6+, consistent imports (default for Player.js, Position.js, Sprite.js).
 Version Control: GitHub, main branch, frequent commits.
@@ -109,7 +109,13 @@ Notes
 
 Assets: PreloaderScene.js loads player frames (survivor-idle_handgun_0.png to _19.png), zombie (zombie.png).
 Zombies:
-Spawn dynamically with a quadratic base interval decreasing from 2s to 0.5s over 5 minutes, modified by a sine wave (±1.25s amplitude, 20s period, non-linear scaling for slow buildup and sharp decline). 10% chance per spawn to trigger a cluster of 2–5 zombies within a 200-unit radius, capped at 150 total zombies. Zombies spawn 800 units from the player at a random angle, move toward the player (speed 60) using physics velocity, and use zombie.png with a square collider (setSize(250, 250)). Collide with player, each other, and bullets via physics groups in PhysicsManager.js. ZombieSystem.js is refactored into short, single-responsibility functions for clarity and readability.
+Spawn dynamically with a quadratic base interval decreasing from 2s to 0.5s over 5 minutes, modified by a sine wave (±1.25s amplitude, 20s period, non-linear scaling for slow buildup and sharp decline).
+10% chance per spawn to trigger a cluster of 2–5 zombies within a 200-unit radius, capped at 175 total zombies (dynamic via GameState, increases by 10 every minute).
+Zombies spawn 1500 units from the player at a random angle, with a 20% chance to be fast zombies (smaller 100x100, speed 120, dark yellow tint 0xCCCC00), created via ZombieFactory with a 0.5-second fade-in effect.
+Move toward the player (speed 60) using physics velocity.
+Despawn if farther than 2000 units from the player, respawn at 1600 units with a heading bias based on player velocity.
+Collide with player, each other, and bullets via physics groups in PhysicsManager.js.
+ZombieSystem.js is refactored into short, single-responsibility functions for clarity and readability, uses GameState for settings and ZombieFactory for creation.
 
 
 
@@ -142,4 +148,4 @@ Extensibility: Design code to be easily extended (e.g., modular functions for ad
 
 These practices were applied in the refactoring of PlayerShootingSystem.js, RenderSystem.js, and SceneManager.js and should be followed for all future systems and components to maintain a consistent, high-quality codebase.
 Context Format
-Updates provided as Markdown in <DOCUMENT> tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
+Updates provided as Markdown in  tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
