@@ -1,5 +1,4 @@
-import createZombie from '../entities/Zombie.js';
-import createFastZombie from '../entities/FastZombie.js';
+import ZombieFactory from '../utils/ZombieFactory.js';
 
 // Manages zombie spawning, movement, and respawning with a dynamic spawn rate.
 export default class ZombieSystem {
@@ -37,7 +36,7 @@ export default class ZombieSystem {
   trySpawnZombie() {
     const spawnPos = this.getSpawnPosition();
     if (!spawnPos) return;
-    this.spawnSingleZombie(spawnPos.x, spawnPos.y);
+    ZombieFactory.createRandomZombie(this.ecs, this.scene, spawnPos.x, spawnPos.y, this.zombieGroup, this.gameState);
     if (this.shouldSpawnCluster()) {
       this.spawnCluster(spawnPos.x, spawnPos.y);
     }
@@ -137,22 +136,6 @@ export default class ZombieSystem {
     };
   }
 
-  // Spawns a single zombie with settings from GameState.
-  spawnSingleZombie(x, y) {
-    const settings = this.gameState.getSettings();
-    const isFastZombie = Math.random() < settings.fastZombieChance;
-    const createFunction = isFastZombie ? createFastZombie : createZombie;
-    const zombieId = createFunction(this.ecs, this.scene, x, y, this.zombieGroup);
-    const sprite = this.ecs.getComponent(zombieId, 'sprite').phaserSprite;
-    sprite.setAlpha(0); // Start invisible
-    this.scene.tweens.add({
-      targets: sprite,
-      alpha: 1,
-      duration: settings.fadeInDuration, // Fade in over 0.5 seconds
-      ease: 'Linear',
-    });
-  }
-
   // Determines if a cluster should spawn.
   shouldSpawnCluster() {
     const settings = this.gameState.getSettings();
@@ -176,7 +159,7 @@ export default class ZombieSystem {
       const offsetDistance = Phaser.Math.Between(0, settings.clusterRadius);
       const x = baseX + Math.cos(offsetAngle) * offsetDistance;
       const y = baseY + Math.sin(offsetAngle) * offsetDistance;
-      this.spawnSingleZombie(x, y);
+      ZombieFactory.createRandomZombie(this.ecs, this.scene, x, y, this.zombieGroup, this.gameState);
     }
   }
 
@@ -214,7 +197,7 @@ export default class ZombieSystem {
         // Respawn a new zombie closer, biased toward player heading
         if (!this.isMaxZombiesReached(settings)) {
           const respawnPos = this.getRespawnPosition(playerPos);
-          this.spawnSingleZombie(respawnPos.x, respawnPos.y);
+          ZombieFactory.createRandomZombie(this.ecs, this.scene, respawnPos.x, respawnPos.y, this.zombieGroup, this.gameState);
         }
       }
     });
