@@ -130,10 +130,11 @@ export default class ZombieSystem {
     }
   }
 
-  // Moves all zombies toward the player.
+  // Moves all zombies toward the player using Position component.
   moveZombiesTowardPlayer() {
     const playerPos = this.getPlayerPosition();
     if (!playerPos) return;
+
     const zombieEntities = this.getZombieEntities();
     zombieEntities.forEach((zombieId) =>
       this.moveZombieToPlayer(zombieId, playerPos)
@@ -162,9 +163,9 @@ export default class ZombieSystem {
       playerPos.x,
       playerPos.y
     );
-    body.setVelocity(
-      Math.cos(angle) * movement.speed,
-      Math.sin(angle) * movement.speed
-    );
+
+    const velocityX = Math.cos(angle) * movement.speed;
+    const velocityY = Math.sin(angle) * movement.speed;
+    body.setVelocity(velocityX, velocityY);
   }
 }

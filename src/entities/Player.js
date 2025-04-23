@@ -12,14 +12,15 @@ export default function createPlayer(ecs, scene, x, y) {
   // Create the sprite first to get its dimensions
   const graphics = scene.add.rectangle(x, y, 150, 150, 0xff0000); // 150x150 red box
   graphics.setOrigin(0.5); // Center the box
+  graphics.setPosition(x, y); // Ensure center stays at (500, 500) after setOrigin
   scene.physics.add.existing(graphics); // Add physics to the rectangle
   graphics.body.setCircle(75); // Approximate circular hitbox (radius = half of 150)
   graphics.body.setOffset(0, 0); // No offset needed for centered rectangle
 
   // Adjust Position to match the sprite's centered coordinates
   const sprite = { phaserSprite: graphics };
-  const adjustedX = graphics.x; // Already centered due to setOrigin(0.5)
-  const adjustedY = graphics.y; // Already centered due to setOrigin(0.5)
+  const adjustedX = graphics.x; // Should be 500
+  const adjustedY = graphics.y; // Should be 500
   ecs.addComponent(playerId, 'position', new Position(adjustedX, adjustedY));
   
   ecs.addComponent(playerId, 'sprite', sprite);

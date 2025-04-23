@@ -41,9 +41,9 @@ export default class PlayerMovementSystem {
     // Apply velocity to physics body
     physicsBody.setVelocity(velocity.x, velocity.y);
 
-    // Sync position component with physics body
+    // Sync position component with physics body, adjusting for origin 0.5
     const position = ecs.getComponent(player, 'position');
-    position.x = physicsBody.x;
-    position.y = physicsBody.y;
+    position.x = physicsBody.x + physicsBody.width * 0.5; // Center of the body
+    position.y = physicsBody.y + physicsBody.height * 0.5; // Center of the body
   }
 }

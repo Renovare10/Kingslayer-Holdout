@@ -24,9 +24,10 @@ export default class RenderSystem {
 
       if (sprite && sprite.phaserSprite) {
         if (physicsBody) {
-          // Sync sprite and ECS position with physics body
-          sprite.phaserSprite.x = physicsBody.body.x + physicsBody.body.width * 0.5; // Adjust for origin 0.5
+          // Sync sprite with physics body, adjusting for origin 0.5
+          sprite.phaserSprite.x = physicsBody.body.x + physicsBody.body.width * 0.5;
           sprite.phaserSprite.y = physicsBody.body.y + physicsBody.body.height * 0.5;
+          // Ensure Position reflects the sprite's center
           position.x = sprite.phaserSprite.x;
           position.y = sprite.phaserSprite.y;
         } else {
