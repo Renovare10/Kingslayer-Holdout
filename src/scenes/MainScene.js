@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import ECSManager from '../utils/ECSManager.js';
-import UIManager from '../utils/UIManager.js';
 import createPlayer from '../entities/Player.js';
 import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
@@ -37,9 +36,8 @@ export default class MainScene extends Phaser.Scene {
     // Setup camera
     setupCamera(this, playerSprite, '#E7C8A2', 0.4);
 
-    // Initialize UI
-    this.uiManager = new UIManager(this, this.ecs);
-    this.uiManager.initialize();
+    // Launch HUDScene in parallel with ECS
+    this.scene.launch('HUDScene', { ecs: this.ecs });
 
     // Store managers for cleanup
     this.physicsManager = physicsManager;
@@ -60,7 +58,6 @@ export default class MainScene extends Phaser.Scene {
       this.sceneManager.restartScene('MainScene', {
         ecs: this.ecs,
         physicsManager: this.physicsManager,
-        uiManager: this.uiManager
       });
       this.isRestarting = false;
     });
@@ -69,7 +66,6 @@ export default class MainScene extends Phaser.Scene {
   update() {
     if (!this.isRestarting) {
       this.ecs.update();
-      this.uiManager.update();
     }
   }
 }

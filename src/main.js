@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import PreloaderScene from './scenes/PreloaderScene.js';
 import MainScene from './scenes/MainScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
+import HUDScene from './scenes/HUDScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -18,7 +19,8 @@ const config = {
         MainScene,
 
         // UI Scenes
-        GameOverScene
+        GameOverScene,
+        HUDScene
     ],
     physics: { 
         default: 'arcade',

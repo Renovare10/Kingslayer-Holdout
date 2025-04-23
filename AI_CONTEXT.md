@@ -6,8 +6,9 @@ index.html: Full-screen setup with no margins, removed Cloudflare script tags fo
 src/main.js: Phaser config (AUTO, full-screen, RESIZE mode, autoCenter: CENTER_BOTH, transparent: false).
 src/scenes/:
 PreloaderScene.js: Loads assets (e.g., 20 player frames, zombie sprite).
-MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, initializes UI via UIManager, manages scene transitions via SceneManager.
+MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, initializes UI via UIManager, launches HUDScene, manages scene transitions via SceneManager.
 GameOverScene.js: Displays game over UI (white "Game Over" text, clickable restart square) using GameOverUIManager, stops itself and triggers MainScene restart via SceneManager.
+HUDScene.js: Displays player HUD, initializes HealthUIManager for health display, runs in parallel with MainScene.
 
 
 src/components/:
@@ -44,6 +45,7 @@ src/utils/:
 ECSManager.js: Core ECS (entity/component/system management, delegates events to EventManager).
 QueryManager.js: Component-based queries with filtering.
 UIManager.js: Manages MainScene UI (e.g., health text), handles creation, positioning, and updates with custom positionFn for dynamic placement.
+HealthUIManager.js: Manages HUDScene health display (black "Health: X" text, 32px Arial), listens for healthChanged events, supports cleanup.
 GameOverUIManager.js: Manages GameOverScene UI (white "Game Over" text, clickable restart square), supports text and rectangles with positionFn.
 EventManager.js: Manages event emission and subscription for complex events (e.g., healthChanged, gameOver, restartGame).
 SystemManager.js: Initializes and manages ECS systems.
@@ -57,43 +59,66 @@ camera.js: Configures camera to follow player.
 Current State
 
 Player: At (500, 500), 150x150 red box (scene.add.rectangle), centered (setOrigin(0.5), setCircle(75), no offset). Rotates to mouse, moves with WASD (speed 100), shoots bullets on click or continuous mouse hold (speed 3500, 200ms cooldown). Collides with static red box and zombies. No clickable UI square (removed).
-Health System: Player has 100 HP, loses 10 HP per zombie collision with a 1-second invincibility period. Health displayed via "Health: X" text in top-left corner, managed by UIManager.
+Health System: Player has 100 HP, loses 10 HP per zombie collision with a 1-second invincibility period. Health displayed via "Health: X" text in top-left corner (32px Arial, black), managed by HealthUIManager in HUDScene.
 Zombies: Spawn every 2s, 800 units from player, move toward player (speed 60) using physics velocity, use zombie.png with square collider (setSize(250, 250)). Collide with player, each other, and bullets via physics groups in PhysicsManager.js.
 Bullets: 14x3 black rectangles, spawn at player’s center, rotate and move toward mouse position (speed 3500, using Angle component), despawn after 1s (using Lifespan component), destroy zombies on collision via PhysicsManager.js.
 Static Red Box: At (600, 600), 50x50, non-ECS physics object, collides with player.
 Camera: Follows player, full-screen, background #E7C8A2, zoom 0.4.
+HUD: Managed by HUDScene, displays health via HealthUIManager, runs in parallel with MainScene, listens for healthChanged events.
 
-### UI
-- **MainScene**: Managed by `UIManager`, displays "Health: X" text in top-left corner (dynamic `positionFn`).
-- **GameOverScene**: Managed by `GameOverUIManager`, displays:
-  - White "Game Over" text (75px Arial, depth 200, centered horizontally, ~100px above center with custom offset).
-  - Clickable dark gray square (100x100, `0x333333`, depth 150, restarts game).
-  - Clickable light gray rectangle (400x80, `0x666666`, depth 190, centered horizontally with custom offset `width / 1.48 - width / 2`, positioned below center at `height / 1.4`, restarts game).
-  - Black "Continue" text (40px Arial, depth 195, centered within the light gray rectangle).
-  Black background.
+UI
 
+MainScene: Managed by UIManager, displays legacy health text (to be phased out).
+
+HUDScene: Managed by HealthUIManager, displays "Health: X" text (32px Arial, black, top-left at (10, 10), scrollFactor 0), updates via healthChanged events.
+
+GameOverScene: Managed by GameOverUIManager, displays:
+
+White "Game Over" text (75px Arial, depth 200, centered horizontally, ~100px above center with custom offset).
+Clickable dark gray square (100x100, 0x333333, depth 150, restarts game).
+Clickable light gray rectangle (400x80, 0x666666, depth 190, centered horizontally with custom offset width / 1.48 - width / 2, positioned below center at height / 1.4, restarts game).
+Black "Continue" text (40px Arial, depth 195, centered within the light gray rectangle).
+Black background.
 
 
 Systems: All accept scene, use ecs.queryManager for efficient queries. ZombieSystem.js, PlayerShootingSystem.js, and RenderSystem.js refactored for readability with single-responsibility functions and null checks.
+
 Collisions: Managed by PhysicsManager.js using Phaser physics groups (bulletGroup, zombieGroup) for efficient collision detection (player-red box, player-zombie, zombie-zombie, bullet-zombie).
+
 Events: Managed by EventManager.js, handling complex events:
-healthChanged: Emitted by HealthSystem.js, listened by UIManager.js for health text.
+
+healthChanged: Emitted by HealthSystem.js, listened by HealthUIManager.js for health text.
 gameOver: Emitted by HealthSystem.js, triggers MainScene pause and GameOverScene start.
 restartGame: Emitted by GameOverScene.js (on square click), triggers MainScene restart via SceneManager.
 
 
 Scene Management: Managed by SceneManager.js, handles MainScene cleanup/restart (ECS, physics, UI) and GameOverScene stopping, extensible for future scenes.
 
+
 Methodology
-ECS: Entities (IDs), components (data), systems (logic).Key ECS Functions: createEntity, addComponent, getComponent, removeComponent, destroyEntity, addSystem, update, initEntity, queryManager.getEntitiesWith, emit, on.Design: Logic in systems/utils, lean scenes, one concept per file.JS: ES6+, consistent imports (default for Player.js, Position.js, Sprite.js).Version Control: GitHub, main branch, frequent commits.
+
+ECS: Entities (IDs), components (data), systems (logic).
+Key ECS Functions: createEntity, addComponent, getComponent, removeComponent, destroyEntity, addSystem, update, initEntity, queryManager.getEntitiesWith, emit, on.
+
+
+Design: Logic in systems/utils, lean scenes, one concept per file.
+JS: ES6+, consistent imports (default for Player.js, Position.js, Sprite.js).
+Version Control: GitHub, main branch, frequent commits.
+
 Notes
+
 Assets: PreloaderScene.js loads player frames (survivor-idle_handgun_0.png to _19.png), zombie (zombie.png).
-Zombies
+Zombies:
 Spawn dynamically with a quadratic base interval decreasing from 2s to 0.5s over 5 minutes, modified by a sine wave (±1.25s amplitude, 20s period, non-linear scaling for slow buildup and sharp decline). 10% chance per spawn to trigger a cluster of 2–5 zombies within a 200-unit radius, capped at 150 total zombies. Zombies spawn 800 units from the player at a random angle, move toward the player (speed 60) using physics velocity, and use zombie.png with a square collider (setSize(250, 250)). Collide with player, each other, and bullets via physics groups in PhysicsManager.js. ZombieSystem.js is refactored into short, single-responsibility functions for clarity and readability.
+
+
+
 Challenges
 
 Revisit sprite centering by editing artwork or adjusting offsets.
 Consider adding PauseScene or other GUI scenes using SceneManager.
+Ensure HealthUIManager cleanup during scene restarts via SceneManager.
+Plan for additional HUD elements (e.g., XP, inventory) with modular UI managers.
 
 Refactoring Best Practices
 To ensure code is readable, maintainable, and aligned with modern JavaScript practices, follow these guidelines for all new and refactored code:
@@ -117,4 +142,4 @@ Extensibility: Design code to be easily extended (e.g., modular functions for ad
 
 These practices were applied in the refactoring of PlayerShootingSystem.js, RenderSystem.js, and SceneManager.js and should be followed for all future systems and components to maintain a consistent, high-quality codebase.
 Context Format
-Updates provided as Markdown in  tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
+Updates provided as Markdown in <DOCUMENT> tags. Latest AI_CONTEXT.md included at thread start; updates modify specific sections unless full refresh requested.
