@@ -1,20 +1,18 @@
 import createZombie from '../entities/Zombie.js';
 import createFastZombie from '../entities/FastZombie.js';
 
-// Manages zombie spawning and movement with a dynamic spawn rate.
+// Manages zombie spawning, movement, and respawning with a dynamic spawn rate.
 export default class ZombieSystem {
-  constructor(scene, zombieGroup) {
+  constructor(scene, zombieGroup, gameState) {
     this.scene = scene;
     this.zombieGroup = zombieGroup;
+    this.gameState = gameState;
     this.spawnTimer = 0;
-    this.gameTime = 0; // Total game time in seconds
-    this.maxZombies = 150; // Maximum active zombies
   }
 
   // Updates spawn timer, zombie movement, and respawn logic.
   update(ecs) {
     this.ecs = ecs;
-    this.gameTime += this.scene.sys.game.loop.delta / 1000;
     this.updateSpawnTimer();
     this.moveZombiesTowardPlayer();
     this.handleZombieRespawn();
@@ -22,7 +20,8 @@ export default class ZombieSystem {
 
   // Increments spawn timer and triggers spawning if ready.
   updateSpawnTimer() {
-    if (this.isMaxZombiesReached()) return;
+    const settings = this.gameState.getSettings();
+    if (this.isMaxZombiesReached(settings)) return;
     this.spawnTimer += this.scene.sys.game.loop.delta;
     if (this.spawnTimer >= this.getSpawnInterval()) {
       this.trySpawnZombie();
@@ -30,8 +29,8 @@ export default class ZombieSystem {
   }
 
   // Checks if the zombie cap is reached.
-  isMaxZombiesReached() {
-    return this.zombieGroup.countActive() >= this.maxZombies;
+  isMaxZombiesReached(settings) {
+    return this.zombieGroup.countActive() >= settings.maxZombies;
   }
 
   // Spawns a zombie and possibly a cluster, resetting the timer.
@@ -62,7 +61,7 @@ export default class ZombieSystem {
   // Computes the quadratic factor for the spawn interval curve.
   getQuadraticFactor() {
     const maxTime = 300; // 5 minutes in seconds
-    const progress = Math.min(this.gameTime / maxTime, 1);
+    const progress = Math.min(this.gameState.gameTime / maxTime, 1);
     return (1 - progress) ** 2;
   }
 
@@ -70,7 +69,7 @@ export default class ZombieSystem {
   getSineWaveOffset() {
     const period = 20; // 20s period
     const amplitude = 1.25 * 1000; // ±1.25s
-    const wave = Math.sin((this.gameTime * 2 * Math.PI) / period);
+    const wave = Math.sin((this.gameState.gameTime * 2 * Math.PI) / period);
     const normalized = (wave + 1) / 2; // Map to 0-1
     const scaled = Math.pow(normalized, 3); // Slow buildup, sharp decline
     return (scaled * 2 - 1) * amplitude; // Map back to -1 to 1
@@ -100,11 +99,12 @@ export default class ZombieSystem {
     return this.ecs.getComponent(playerId, 'movement').velocity;
   }
 
-  // Calculates a spawn position 1500 units from the player for initial spawns.
+  // Calculates a spawn position using GameState settings.
   getSpawnPosition() {
     const playerPos = this.getPlayerPosition();
     if (!playerPos) return null;
-    const distance = 1500;
+    const settings = this.gameState.getSettings();
+    const distance = settings.initialSpawnDistance;
     const angle = Phaser.Math.Between(0, 360) * (Math.PI / 180);
     return {
       x: playerPos.x + Math.cos(angle) * distance,
@@ -112,10 +112,11 @@ export default class ZombieSystem {
     };
   }
 
-  // Calculates a respawn position 1600 units from the player, biased toward heading.
+  // Calculates a respawn position using GameState settings.
   getRespawnPosition(playerPos) {
+    const settings = this.gameState.getSettings();
     const playerVelocity = this.getPlayerVelocity();
-    const distance = 1600;
+    const distance = settings.respawnDistance;
     let angle;
 
     // If player is moving, bias the spawn angle toward their heading
@@ -136,9 +137,10 @@ export default class ZombieSystem {
     };
   }
 
-  // Spawns a single zombie (20% chance for fast zombie) at the given position with fade-in.
+  // Spawns a single zombie with settings from GameState.
   spawnSingleZombie(x, y) {
-    const isFastZombie = Math.random() < 0.2;
+    const settings = this.gameState.getSettings();
+    const isFastZombie = Math.random() < settings.fastZombieChance;
     const createFunction = isFastZombie ? createFastZombie : createZombie;
     const zombieId = createFunction(this.ecs, this.scene, x, y, this.zombieGroup);
     const sprite = this.ecs.getComponent(zombieId, 'sprite').phaserSprite;
@@ -146,29 +148,32 @@ export default class ZombieSystem {
     this.scene.tweens.add({
       targets: sprite,
       alpha: 1,
-      duration: 500, // Fade in over 0.5 seconds
+      duration: settings.fadeInDuration, // Fade in over 0.5 seconds
       ease: 'Linear',
     });
   }
 
-  // Determines if a cluster should spawn (10% chance).
+  // Determines if a cluster should spawn.
   shouldSpawnCluster() {
-    return Math.random() < 0.1 && !this.isMaxZombiesReached();
+    const settings = this.gameState.getSettings();
+    return Math.random() < settings.clusterChance && !this.isMaxZombiesReached(settings);
   }
 
-  // Calculates the number of zombies to spawn in a cluster (2-5, capped by limit).
+  // Calculates the number of zombies to spawn in a cluster.
   getClusterSize() {
-    const clusterSize = Phaser.Math.Between(2, 5);
-    const availableSlots = this.maxZombies - this.zombieGroup.countActive();
+    const settings = this.gameState.getSettings();
+    const clusterSize = Phaser.Math.Between(settings.clusterSizeMin, settings.clusterSizeMax);
+    const availableSlots = settings.maxZombies - this.zombieGroup.countActive();
     return Math.min(clusterSize, availableSlots);
   }
 
   // Spawns a cluster of zombies around the base position.
   spawnCluster(baseX, baseY) {
+    const settings = this.gameState.getSettings();
     const zombiesToSpawn = this.getClusterSize();
     for (let i = 0; i < zombiesToSpawn; i++) {
       const offsetAngle = Phaser.Math.Between(0, 360) * (Math.PI / 180);
-      const offsetDistance = Phaser.Math.Between(0, 200);
+      const offsetDistance = Phaser.Math.Between(0, settings.clusterRadius);
       const x = baseX + Math.cos(offsetAngle) * offsetDistance;
       const y = baseY + Math.sin(offsetAngle) * offsetDistance;
       this.spawnSingleZombie(x, y);
@@ -188,6 +193,7 @@ export default class ZombieSystem {
 
   // Handles despawning and respawning zombies too far from the player.
   handleZombieRespawn() {
+    const settings = this.gameState.getSettings();
     const playerPos = this.getPlayerPosition();
     if (!playerPos) return;
 
@@ -201,12 +207,12 @@ export default class ZombieSystem {
         zombiePos.y
       );
 
-      if (distance > 2000) {
+      if (distance > settings.despawnDistance) {
         // Despawn the zombie
         this.ecs.destroyEntity(zombieId);
 
         // Respawn a new zombie closer, biased toward player heading
-        if (!this.isMaxZombiesReached()) {
+        if (!this.isMaxZombiesReached(settings)) {
           const respawnPos = this.getRespawnPosition(playerPos);
           this.spawnSingleZombie(respawnPos.x, respawnPos.y);
         }

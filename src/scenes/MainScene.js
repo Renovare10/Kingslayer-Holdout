@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import ECSManager from '../utils/ECSManager.js';
+import GameState from '../utils/GameState.js';
 import createPlayer from '../entities/Player.js';
 import { createAnimations } from '../utils/animations.js';
 import { setupCamera } from '../utils/camera.js';
@@ -20,12 +21,15 @@ export default class MainScene extends Phaser.Scene {
 
     createAnimations(this);
 
+    // Initialize game state
+    this.gameState = new GameState();
+
     // Initialize physics
     const physicsManager = new PhysicsManager(this, this.ecs);
     physicsManager.initialize();
 
-    // Initialize systems with zombieGroup and bulletGroup
-    const systemManager = new SystemManager(this, this.ecs, physicsManager.getZombieGroup(), physicsManager.getBulletGroup());
+    // Initialize systems with zombieGroup and bulletGroup, passing gameState
+    const systemManager = new SystemManager(this, this.ecs, physicsManager.getZombieGroup(), physicsManager.getBulletGroup(), this.gameState);
     systemManager.initializeSystems();
 
     // Create player and setup collisions
@@ -60,11 +64,15 @@ export default class MainScene extends Phaser.Scene {
         physicsManager: this.physicsManager,
       });
       this.isRestarting = false;
+      // Reset game state on restart
+      this.gameState = new GameState();
     });
   }
 
   update() {
     if (!this.isRestarting) {
+      // Update game state with frame delta
+      this.gameState.update(this.sys.game.loop.delta);
       this.ecs.update();
     }
   }
