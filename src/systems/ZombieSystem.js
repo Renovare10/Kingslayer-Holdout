@@ -1,4 +1,5 @@
 import createZombie from '../entities/Zombie.js';
+import createFastZombie from '../entities/FastZombie.js';
 
 // Manages zombie spawning and movement with a dynamic spawn rate.
 export default class ZombieSystem {
@@ -86,11 +87,11 @@ export default class ZombieSystem {
     return this.ecs.getComponent(playerId, 'position');
   }
 
-  // Calculates a spawn position 800 units from the player.
+  // Calculates a spawn position 1500 units from the player.
   getSpawnPosition() {
     const playerPos = this.getPlayerPosition();
     if (!playerPos) return null;
-    const distance = 800;
+    const distance = 1500;
     const angle = Phaser.Math.Between(0, 360) * (Math.PI / 180);
     return {
       x: playerPos.x + Math.cos(angle) * distance,
@@ -98,9 +99,11 @@ export default class ZombieSystem {
     };
   }
 
-  // Spawns a single zombie at the given position.
+  // Spawns a single zombie (20% chance for fast zombie) at the given position.
   spawnSingleZombie(x, y) {
-    createZombie(this.ecs, this.scene, x, y, this.zombieGroup);
+    const isFastZombie = Math.random() < 0.2;
+    const createFunction = isFastZombie ? createFastZombie : createZombie;
+    createFunction(this.ecs, this.scene, x, y, this.zombieGroup);
   }
 
   // Determines if a cluster should spawn (10% chance).
