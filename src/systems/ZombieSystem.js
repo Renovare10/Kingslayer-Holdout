@@ -11,12 +11,13 @@ export default class ZombieSystem {
     this.maxZombies = 150; // Maximum active zombies
   }
 
-  // Updates spawn timer and zombie movement.
+  // Updates spawn timer, zombie movement, and respawn logic.
   update(ecs) {
     this.ecs = ecs;
     this.gameTime += this.scene.sys.game.loop.delta / 1000;
     this.updateSpawnTimer();
     this.moveZombiesTowardPlayer();
+    this.handleZombieRespawn();
   }
 
   // Increments spawn timer and triggers spawning if ready.
@@ -87,7 +88,19 @@ export default class ZombieSystem {
     return this.ecs.getComponent(playerId, 'position');
   }
 
-  // Calculates a spawn position 1500 units from the player.
+  // Gets the player’s velocity for respawn bias.
+  getPlayerVelocity() {
+    const playerEntities = this.ecs.queryManager.getEntitiesWith(
+      'entityType',
+      'movement',
+      (id) => this.ecs.getComponent(id, 'entityType')?.type === 'player'
+    );
+    if (playerEntities.size === 0) return { x: 0, y: 0 };
+    const playerId = [...playerEntities][0];
+    return this.ecs.getComponent(playerId, 'movement').velocity;
+  }
+
+  // Calculates a spawn position 1500 units from the player for initial spawns.
   getSpawnPosition() {
     const playerPos = this.getPlayerPosition();
     if (!playerPos) return null;
@@ -99,11 +112,43 @@ export default class ZombieSystem {
     };
   }
 
-  // Spawns a single zombie (20% chance for fast zombie) at the given position.
+  // Calculates a respawn position 1600 units from the player, biased toward heading.
+  getRespawnPosition(playerPos) {
+    const playerVelocity = this.getPlayerVelocity();
+    const distance = 1600;
+    let angle;
+
+    // If player is moving, bias the spawn angle toward their heading
+    const velocityMagnitude = Math.sqrt(playerVelocity.x ** 2 + playerVelocity.y ** 2);
+    if (velocityMagnitude > 0) {
+      const headingAngle = Math.atan2(playerVelocity.y, playerVelocity.x);
+      // Add a random offset (±45 degrees) around the heading for variation
+      const offset = Phaser.Math.Between(-45, 45) * (Math.PI / 180);
+      angle = headingAngle + offset;
+    } else {
+      // If player isn't moving, spawn randomly around them
+      angle = Phaser.Math.Between(0, 360) * (Math.PI / 180);
+    }
+
+    return {
+      x: playerPos.x + Math.cos(angle) * distance,
+      y: playerPos.y + Math.sin(angle) * distance,
+    };
+  }
+
+  // Spawns a single zombie (20% chance for fast zombie) at the given position with fade-in.
   spawnSingleZombie(x, y) {
     const isFastZombie = Math.random() < 0.2;
     const createFunction = isFastZombie ? createFastZombie : createZombie;
-    createFunction(this.ecs, this.scene, x, y, this.zombieGroup);
+    const zombieId = createFunction(this.ecs, this.scene, x, y, this.zombieGroup);
+    const sprite = this.ecs.getComponent(zombieId, 'sprite').phaserSprite;
+    sprite.setAlpha(0); // Start invisible
+    this.scene.tweens.add({
+      targets: sprite,
+      alpha: 1,
+      duration: 500, // Fade in over 0.5 seconds
+      ease: 'Linear',
+    });
   }
 
   // Determines if a cluster should spawn (10% chance).
@@ -139,6 +184,34 @@ export default class ZombieSystem {
     zombieEntities.forEach((zombieId) =>
       this.moveZombieToPlayer(zombieId, playerPos)
     );
+  }
+
+  // Handles despawning and respawning zombies too far from the player.
+  handleZombieRespawn() {
+    const playerPos = this.getPlayerPosition();
+    if (!playerPos) return;
+
+    const zombieEntities = this.getZombieEntities();
+    zombieEntities.forEach((zombieId) => {
+      const zombiePos = this.ecs.getComponent(zombieId, 'position');
+      const distance = Phaser.Math.Distance.Between(
+        playerPos.x,
+        playerPos.y,
+        zombiePos.x,
+        zombiePos.y
+      );
+
+      if (distance > 2000) {
+        // Despawn the zombie
+        this.ecs.destroyEntity(zombieId);
+
+        // Respawn a new zombie closer, biased toward player heading
+        if (!this.isMaxZombiesReached()) {
+          const respawnPos = this.getRespawnPosition(playerPos);
+          this.spawnSingleZombie(respawnPos.x, respawnPos.y);
+        }
+      }
+    });
   }
 
   // Queries zombies with required components for movement.
