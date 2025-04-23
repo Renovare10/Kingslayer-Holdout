@@ -1,3 +1,5 @@
+import Flash from '../components/Flash.js'; // Add this import
+
 export default class HealthSystem {
   constructor(scene, zombieGroup) {
     this.scene = scene;
@@ -23,8 +25,12 @@ export default class HealthSystem {
       // Check for collisions with zombies
       if (health.invincibilityTimer <= 0) {
         this.scene.physics.world.overlap(playerSprite, this.zombieGroup, () => {
-          health.current -= 100;
+          health.current -= 10;
           health.invincibilityTimer = 1000; // 1 second invincibility
+          
+          // Add Flash component for visual feedback
+          ecs.addComponent(playerId, 'flash', new Flash(1000, 100)); // 1s flash, toggle every 100ms
+
           if (health.current <= 0) {
             health.current = 0;
             this.ecs.emit('gameOver');
