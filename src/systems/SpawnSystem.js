@@ -7,6 +7,15 @@ export default class SpawnSystem {
     this.gameState = gameState;
   }
 
+  init(ecs) {
+    this.ecs = ecs;
+    this.ecs.on('spawnZombie', ({ x, y }) => {
+      if (this.zombieGroup.countActive() < this.gameState.getSettings().maxZombies) {
+        ZombieFactory.createRandomZombie(this.ecs, this.scene, x, y, this.zombieGroup, this.gameState);
+      }
+    });
+  }
+
   update(ecs) {
     const settings = this.gameState.getSettings();
     const spawnerEntities = ecs.queryManager.getEntitiesWith('spawn');
@@ -38,20 +47,20 @@ export default class SpawnSystem {
 
   getBaseInterval() {
     const quadraticFactor = this.getQuadraticFactor();
-    const minInterval = 500; // 0.5s
-    const maxInterval = 2000; // 2s
+    const minInterval = 500;
+    const maxInterval = 2000;
     return minInterval + (maxInterval - minInterval) * quadraticFactor;
   }
 
   getQuadraticFactor() {
-    const maxTime = 300; // 5 minutes
+    const maxTime = 300;
     const progress = Math.min(this.gameState.gameTime / maxTime, 1);
     return (1 - progress) ** 2;
   }
 
   getSineWaveOffset() {
-    const period = 20; // 20s period
-    const amplitude = 1.25 * 1000; // ±1.25s
+    const period = 20;
+    const amplitude = 1.25 * 1000;
     const wave = Math.sin((this.gameState.gameTime * 2 * Math.PI) / period);
     const normalized = (wave + 1) / 2;
     const scaled = Math.pow(normalized, 3);

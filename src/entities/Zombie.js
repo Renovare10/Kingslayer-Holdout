@@ -1,19 +1,10 @@
 import createBaseZombie from './BaseZombie.js';
 
-/**
- * Creates a standard zombie entity using the base zombie factory.
- * @param {ECSManager} ecs - The ECS manager instance.
- * @param {Phaser.Scene} scene - The Phaser scene.
- * @param {number} x - X-coordinate for zombie spawn.
- * @param {number} y - Y-coordinate for zombie spawn.
- * @param {Phaser.Physics.Arcade.Group} zombieGroup - Physics group for zombies.
- * @returns {number} The entity ID of the created zombie.
- */
-export default function createZombie(ecs, scene, x, y, zombieGroup) {
+export default function createZombie(ecs, scene, x, y, zombieGroup, settings) {
   const config = {
     size: { width: 250, height: 250 },
     speed: 60,
     spriteKey: 'zombie',
   };
-  return createBaseZombie(ecs, scene, x, y, zombieGroup, config);
+  return createBaseZombie(ecs, scene, x, y, zombieGroup, { ...config, settings });
 }
