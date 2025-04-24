@@ -30,7 +30,7 @@ export default class LifecycleSystem {
       if (distance > lifecycle.despawnDistance) {
         ecs.destroyEntity(zombieId);
         if (this.zombieGroup.countActive() < lifecycle.maxZombies) {
-          const respawnPos = this.getRespawnPosition(playerPos);
+          const respawnPos = this.getRespawnPosition(playerPos, ecs);
           ecs.emit('spawnZombie', { x: respawnPos.x, y: respawnPos.y });
         }
       }
@@ -59,9 +59,9 @@ export default class LifecycleSystem {
     return ecs.getComponent(playerId, 'movement').velocity;
   }
 
-  getRespawnPosition(playerPos) {
+  getRespawnPosition(playerPos, ecs) {
     const settings = this.gameState.getSettings();
-    const playerVelocity = this.getPlayerVelocity(this.ecs);
+    const playerVelocity = this.getPlayerVelocity(ecs);
     const distance = settings.respawnDistance;
     let angle;
 
