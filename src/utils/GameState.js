@@ -7,7 +7,7 @@ export default class GameState {
     this.level = 1; // Player level (for future XP system)
 
     // Initial settings
-    this.baseMaxZombies = 175; // Updated to 175
+    this.baseMaxZombies = 175;
     this.initialSpawnDistance = 1500;
     this.despawnDistance = 2000;
     this.respawnDistance = 1600;
@@ -17,6 +17,8 @@ export default class GameState {
     this.clusterSizeMax = 5;
     this.clusterRadius = 200;
     this.fadeInDuration = 500;
+    this.xpPerZombie = 1; // XP per zombie death
+    this.xpDropChance = 1.0; // 100% drop chance
   }
 
   /**
@@ -33,7 +35,7 @@ export default class GameState {
    */
   getSettings() {
     return {
-      maxZombies: this.baseMaxZombies + Math.floor(this.gameTime / 60) * 10, // Increase by 10 every minute
+      maxZombies: this.baseMaxZombies + Math.floor(this.gameTime / 60) * 10,
       initialSpawnDistance: this.initialSpawnDistance,
       despawnDistance: this.despawnDistance,
       respawnDistance: this.respawnDistance,
@@ -43,6 +45,8 @@ export default class GameState {
       clusterSizeMax: this.clusterSizeMax,
       clusterRadius: this.clusterRadius,
       fadeInDuration: this.fadeInDuration,
+      xpPerZombie: this.xpPerZombie,
+      xpDropChance: this.xpDropChance,
     };
   }
 }
