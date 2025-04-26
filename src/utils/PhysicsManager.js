@@ -81,9 +81,12 @@ export default class PhysicsManager {
       const playerXP = this.ecs.getComponent(playerId, 'playerXP');
       if (!playerXP) return;
 
-      // Update player XP
-      playerXP.xp += xp.value;
+      // Update player XP and check for level-up
+      const leveledUp = playerXP.addXP(xp.value);
       this.ecs.emit('xpChanged', { xp: playerXP.xp, level: playerXP.level });
+      if (leveledUp) {
+        this.ecs.emit('levelChanged', { level: playerXP.level });
+      }
 
       // Destroy XP entity
       this.ecs.destroyEntity(xpId);

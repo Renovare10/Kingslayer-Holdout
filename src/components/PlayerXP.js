@@ -15,5 +15,20 @@ export function createPlayerXP({
     xp,
     level,
     xpToNextLevel,
+    /**
+     * Updates XP and checks for level-up, resetting XP to 0.
+     * @param {number} xpGained - XP to add.
+     * @returns {boolean} True if leveled up.
+     */
+    addXP(xpGained) {
+      this.xp += xpGained;
+      if (this.xp >= this.xpToNextLevel) {
+        this.level += 1;
+        this.xp = 0; // Reset XP to 0
+        this.xpToNextLevel += 50; // Increase by 50
+        return true;
+      }
+      return false;
+    },
   };
 }
