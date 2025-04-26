@@ -57,7 +57,7 @@ export default class PhysicsManager {
         this.ecs.addComponent(xpId, 'xp', createXP());
         this.ecs.addComponent(xpId, 'position', new Position(position.x, position.y));
         const spriteData = this.spriteFactory.createXPSprite(position.x, position.y);
-        spriteData.phaserSprite.entityId = xpId; // Ensure entity ID
+        spriteData.phaserSprite.entityId = xpId;
         this.ecs.addComponent(xpId, 'sprite', spriteData);
         this.xpGroup.add(spriteData.phaserSprite);
 
@@ -67,37 +67,22 @@ export default class PhysicsManager {
 
     // Player-XP collision
     this.scene.physics.add.overlap(playerSprite, this.xpGroup, (playerSprite, xpSprite) => {
-      console.log('Player-XP overlap detected'); // Debug log
       const xpId = xpSprite.entityId;
-      if (!xpId) {
-        console.log('No xpId found');
-        return;
-      }
+      if (!xpId) return;
 
       const xp = this.ecs.getComponent(xpId, 'xp');
-      if (!xp) {
-        console.log('No xp component found');
-        return;
-      }
+      if (!xp) return;
 
       // Find player entity
       const playerEntities = this.ecs.queryManager.getEntitiesWith('playerXP');
-      console.log('Player entities:', playerEntities.size); // Debug log
-      if (playerEntities.size === 0) {
-        console.log('No playerXP entities found');
-        return;
-      }
+      if (playerEntities.size === 0) return;
 
       const playerId = [...playerEntities][0];
       const playerXP = this.ecs.getComponent(playerId, 'playerXP');
-      if (!playerXP) {
-        console.log('No playerXP component found');
-        return;
-      }
+      if (!playerXP) return;
 
       // Update player XP
       playerXP.xp += xp.value;
-      console.log(`XP collected: ${playerXP.xp}, Level: ${playerXP.level}`); // Debug log
       this.ecs.emit('xpChanged', { xp: playerXP.xp, level: playerXP.level });
 
       // Destroy XP entity
