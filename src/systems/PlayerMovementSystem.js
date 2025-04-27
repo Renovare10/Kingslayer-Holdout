@@ -1,4 +1,6 @@
-// src/systems/PlayerMovementSystem.js
+/**
+ * Manages player movement based on WASD input and SpeedUpgrade.
+ */
 export default class PlayerMovementSystem {
   constructor(scene) {
     this.scene = scene;
@@ -20,6 +22,11 @@ export default class PlayerMovementSystem {
     const movement = ecs.getComponent(player, 'movement');
     const physicsBody = ecs.getComponent(player, 'physicsBody').body;
     const cursors = this.scene.input.keyboard.addKeys('W,A,S,D');
+
+    // Apply speed boost from SpeedUpgrade
+    const speedUpgrade = ecs.getComponent(player, 'speedUpgrade');
+    const baseSpeed = 100;
+    movement.speed = baseSpeed + (speedUpgrade ? speedUpgrade.speedBoost * speedUpgrade.count : 0);
 
     movement.velocity.x = 0;
     movement.velocity.y = 0;

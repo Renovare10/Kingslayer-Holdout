@@ -8,6 +8,7 @@ PreloaderScene.js: Loads assets (e.g., 20 player frames, zombie sprite).
 MainScene.js: Game logic, creates player (red box), initializes systems via SystemManager, sets up physics via PhysicsManager, launches HUDScene, manages scene transitions via SceneManager, initializes and updates GameState for dynamic settings, creates spawner entity with Spawn component.
 GameOverScene.js: Displays game over UI (white "Game Over" text, clickable restart square) using GameOverUIManager, stops itself and triggers MainScene restart via SceneManager.
 HUDScene.js: Displays player HUD, initializes HealthUIManager for health display and XPUIManager for XP/level display, runs in parallel with MainScene.
+UpgradeScene.js: Launched on level-up via levelChanged event, pauses MainScene, displays "Choose Your Power-Up" (50px Arial, white, y = height / 3) and a single "Speed Boost" option (50x50 red circle, 20px Arial title, centered at x = width / 2, y = height * 2/3) on a semi-transparent black background (0x000000, alpha 0.7). Skips UI and resumes MainScene if SpeedUpgrade.count is 3 (max stacks). Resumes MainScene and stops itself on click or Space key press. Initialized with ecs data.
 
 
 src/components/:
@@ -26,6 +27,7 @@ Spawn.js: Defines spawning settings (interval, timer, clusterChance, clusterSize
 Lifecycle.js: Defines lifecycle settings (despawnDistance, respawnDistance, maxZombies) for zombies.
 XP.js: Defines XP entities dropped by zombies (value, createdAt, lifespan).
 PlayerXP.js: Tracks player XP and level (xp, level, xpToNextLevel), includes addXP method for level-up logic.
+SpeedUpgrade.js: Stores speed upgrade data for the player (count: 0–3, maxStacks: 3, speedBoost: 5 for +5 speed per stack). Located in src/components/upgrades.js
 
 
 src/systems/:
@@ -40,6 +42,8 @@ MovementSystem.js: Moves zombies toward the player using Movement component (spe
 SpawnSystem.js: Manages zombie spawning for entities with Spawn component, uses dynamic GameState settings for spawn interval (2s–0.5s with quadratic + sine wave), cluster spawns (10% chance, 2–5 zombies within 200 units), and max zombies (175, increasing over time), listens for spawnZombie events for respawns, uses ZombieFactory for creation.
 LifecycleSystem.js: Manages zombie despawning and respawning for entities with Lifecycle component, despawns zombies >2000 units from player, emits spawnZombie events for respawns at 1600 units with player velocity bias, respects maxZombies, refactored with single-responsibility functions and JSDoc.
 XPSystem.js: Manages XP entity despawn (10s lifespan).
+PlayerMovementSystem.js: Moves player with WASD (base speed 100, increased by speedUpgrade.speedBoost * speedUpgrade.count, e.g., 115 with 3 stacks). Normalizes diagonal movement, syncs physics body with Position component.
+PlayerUpgradeSystem.js: Listens for levelChanged events, launches UpgradeScene with ecs data. No continuous updates.
 
 
 src/entities/:
@@ -118,15 +122,16 @@ Systems
 All accept scene, use ecs.queryManager for efficient queries. MovementSystem.js, SpawnSystem.js, LifecycleSystem.js, PlayerShootingSystem.js, RenderSystem.js, and XPSystem.js refactored for readability with single-responsibility functions, JSDoc comments, and null checks.
 Collisions
 Managed by PhysicsManager.js using Phaser physics groups (bulletGroup, zombieGroup, xpGroup) for efficient collision detection (player-red box, player-zombie, zombie-zombie, bullet-zombie, player-XP).
+
 Events
 Managed by EventManager.js, handling complex events:
-
 healthChanged: Emitted by HealthSystem.js, listened by HealthUIManager.js for health text.
 gameOver: Emitted by HealthSystem.js, triggers MainScene pause and GameOverScene start.
 restartGame: Emitted by GameOverScene.js (on square click), triggers MainScene restart via SceneManager, resets GameState.
 spawnZombie: Emitted by LifecycleSystem.js, listened by SpawnSystem.js for zombie respawns.
 xpChanged: Emitted by PhysicsManager.js on XP collection, listened by XPUIManager.js for XP/level text.
 levelChanged: Emitted by PhysicsManager.js on level-up, listened by XPUIManager.js for scale tween.
+levelChanged: Emitted by PhysicsManager.js on player level-up, listened by XPUIManager.js for XP/level UI updates and PlayerUpgradeSystem.js to launch UpgradeScene.
 
 Scene Management
 Managed by SceneManager.js, handles MainScene cleanup/restart (ECS, physics, UI) and GameOverScene stopping, extensible for future scenes.

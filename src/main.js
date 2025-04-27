@@ -3,6 +3,7 @@ import PreloaderScene from './scenes/PreloaderScene.js';
 import MainScene from './scenes/MainScene.js';
 import GameOverScene from './scenes/GameOverScene.js';
 import HUDScene from './scenes/HUDScene.js';
+import UpgradeScene from './scenes/UpgradeScene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -20,7 +21,8 @@ const config = {
 
         // UI Scenes
         GameOverScene,
-        HUDScene
+        HUDScene,
+        UpgradeScene
     ],
     physics: { 
         default: 'arcade',

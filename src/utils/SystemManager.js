@@ -9,6 +9,7 @@ import MovementSystem from '../systems/MovementSystem.js';
 import SpawnSystem from '../systems/SpawnSystem.js';
 import LifecycleSystem from '../systems/LifecycleSystem.js';
 import XPSystem from '../systems/XPSystem.js';
+import PlayerUpgradeSystem from '../systems/PlayerUpgradeSystem.js';
 
 export default class SystemManager {
   constructor(scene, ecs, zombieGroup, bulletGroup, gameState) {
@@ -31,5 +32,6 @@ export default class SystemManager {
     this.ecs.addSystem(new MovementSystem(this.scene));
     this.ecs.addSystem(new LifecycleSystem(this.scene, this.zombieGroup, this.gameState));
     this.ecs.addSystem(new XPSystem(this.scene));
+    this.ecs.addSystem(new PlayerUpgradeSystem(this.scene, this.ecs));
   }
 }
