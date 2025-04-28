@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import SpeedUpgrade from '../components/upgrades/SpeedUpgrade.js';
+import MagnetUpgrade from '../components/upgrades/MagnetUpgrade.js';
 
 /**
  * Displays the upgrade selection UI when the player levels up.
@@ -7,7 +8,10 @@ import SpeedUpgrade from '../components/upgrades/SpeedUpgrade.js';
 export default class UpgradeScene extends Phaser.Scene {
   constructor() {
     super('UpgradeScene');
-    this.powerUp = { type: 'speed', color: 0xff0000, title: 'Speed Boost' };
+    this.powerUps = [
+      { type: 'speed', color: 0xff0000, title: 'Speed Boost' },
+      { type: 'magnet', color: 0x0000ff, title: 'XP Magnet' },
+    ];
   }
 
   init(data) {
@@ -25,9 +29,10 @@ export default class UpgradeScene extends Phaser.Scene {
       return;
     }
 
-    // Skip UI if SpeedUpgrade is maxed
+    // Skip UI if all upgrades are maxed
     const speedUpgrade = this.ecs.getComponent(playerId, 'speedUpgrade') || new SpeedUpgrade();
-    if (speedUpgrade.count >= speedUpgrade.maxStacks) {
+    const magnetUpgrade = this.ecs.getComponent(playerId, 'magnetUpgrade') || new MagnetUpgrade();
+    if (speedUpgrade.count >= speedUpgrade.maxStacks && magnetUpgrade.count >= magnetUpgrade.maxStacks) {
       this.scene.resume('MainScene');
       this.scene.stop();
       return;
@@ -53,23 +58,33 @@ export default class UpgradeScene extends Phaser.Scene {
       color: '#ffffff',
     }).setOrigin(0.5).setDepth(110);
 
-    // Single power-up option (Speed Boost)
-    const x = width / 2; // Centered
-    const y = height * 2 / 3; // Lower on screen
+    // Power-up options (filter out maxed upgrades)
+    const availablePowerUps = this.powerUps.filter(powerUp => {
+      if (powerUp.type === 'speed') return speedUpgrade.count < speedUpgrade.maxStacks;
+      if (powerUp.type === 'magnet') return magnetUpgrade.count < magnetUpgrade.maxStacks;
+      return false;
+    });
 
-    // 50x50 red circle
-    this.powerUpCircle = this.add.circle(x, y, 25, this.powerUp.color)
-      .setDepth(120)
-      .setOrigin(0.5)
-      .setInteractive()
-      .on('pointerdown', () => this.#selectPowerUp(this.powerUp.type));
+    this.powerUpElements = availablePowerUps.map((powerUp, index) => {
+      const x = width / 2 + (index - (availablePowerUps.length - 1) / 2) * 150; // Center with 150px spacing
+      const y = height * 2 / 3; // Lower on screen
 
-    // Title text (20px Arial, white)
-    this.powerUpTitle = this.add.text(x, y + 40, this.powerUp.title, {
-      fontFamily: 'Arial',
-      fontSize: '20px',
-      color: '#ffffff',
-    }).setOrigin(0.5).setDepth(120);
+      // 50x50 colored circle
+      const circle = this.add.circle(x, y, 25, powerUp.color)
+        .setDepth(120)
+        .setOrigin(0.5)
+        .setInteractive()
+        .on('pointerdown', () => this.#selectPowerUp(powerUp.type));
+
+      // Title text (20px Arial, white)
+      const title = this.add.text(x, y + 40, powerUp.title, {
+        fontFamily: 'Arial',
+        fontSize: '20px',
+        color: '#ffffff',
+      }).setOrigin(0.5).setDepth(120);
+
+      return { circle, title };
+    });
 
     // Handle resize events
     this.scale.on('resize', (gameSize) => {
@@ -85,11 +100,13 @@ export default class UpgradeScene extends Phaser.Scene {
       this.titleText.setFontSize(newFontSize);
       this.titleText.setPosition(newWidth / 2, newHeight / 3);
 
-      // Update power-up
-      const newX = newWidth / 2;
-      const newY = newHeight * 2 / 3;
-      this.powerUpCircle.setPosition(newX, newY);
-      this.powerUpTitle.setPosition(newX, newY + 40);
+      // Update power-up elements
+      this.powerUpElements.forEach((element, index) => {
+        const x = newWidth / 2 + (index - (availablePowerUps.length - 1) / 2) * 150; // Recenter
+        const y = newHeight * 2 / 3;
+        element.circle.setPosition(x, y);
+        element.title.setPosition(x, y + 40);
+      });
     });
 
     // Resume on Space key press (for testing)
@@ -100,19 +117,24 @@ export default class UpgradeScene extends Phaser.Scene {
   }
 
   #selectPowerUp(type) {
-    if (type !== 'speed') return;
-
     // Find player entity
     const playerId = [...this.ecs.queryManager.getEntitiesWith('entityType')]
       .find(id => this.ecs.getComponent(id, 'entityType').type === 'player');
 
     if (!playerId) return;
 
-    // Get or create SpeedUpgrade component
-    let speedUpgrade = this.ecs.getComponent(playerId, 'speedUpgrade') || new SpeedUpgrade();
-    if (speedUpgrade.count < speedUpgrade.maxStacks) {
-      speedUpgrade.count += 1;
-      this.ecs.addComponent(playerId, 'speedUpgrade', speedUpgrade);
+    if (type === 'speed') {
+      let speedUpgrade = this.ecs.getComponent(playerId, 'speedUpgrade') || new SpeedUpgrade();
+      if (speedUpgrade.count < speedUpgrade.maxStacks) {
+        speedUpgrade.count += 1;
+        this.ecs.addComponent(playerId, 'speedUpgrade', speedUpgrade);
+      }
+    } else if (type === 'magnet') {
+      let magnetUpgrade = this.ecs.getComponent(playerId, 'magnetUpgrade') || new MagnetUpgrade();
+      if (magnetUpgrade.count < magnetUpgrade.maxStacks) {
+        magnetUpgrade.count += 1;
+        this.ecs.addComponent(playerId, 'magnetUpgrade', magnetUpgrade);
+      }
     }
 
     // Resume game

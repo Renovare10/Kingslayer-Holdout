@@ -59,7 +59,8 @@ export default class PhysicsManager {
         const spriteData = this.spriteFactory.createXPSprite(position.x, position.y);
         spriteData.phaserSprite.entityId = xpId;
         this.ecs.addComponent(xpId, 'sprite', spriteData);
-        this.xpGroup.add(spriteData.phaserSprite);
+        this.ecs.addComponent(xpId, 'physicsBody', { body: this.scene.physics.add.existing(spriteData.phaserSprite).body });
+        this.xpGroup.add(spriteData.phaserSprite, true);
 
         this.ecs.destroyEntity(zombieId);
       }
@@ -68,7 +69,10 @@ export default class PhysicsManager {
     // Player-XP collision
     this.scene.physics.add.overlap(playerSprite, this.xpGroup, (playerSprite, xpSprite) => {
       const xpId = xpSprite.entityId;
-      if (!xpId) return;
+      if (!xpId) {
+        console.warn('PhysicsManager: XP sprite missing entityId:', xpSprite);
+        return;
+      }
 
       const xp = this.ecs.getComponent(xpId, 'xp');
       if (!xp) return;
@@ -88,7 +92,17 @@ export default class PhysicsManager {
         this.ecs.emit('levelChanged', { level: playerXP.level });
       }
 
-      // Destroy XP entity
+      // Destroy XP entity and sprites
+      const spriteData = this.ecs.getComponent(xpId, 'sprite');
+      if (spriteData) {
+        if (spriteData.phaserSprite) {
+          this.xpGroup.remove(spriteData.phaserSprite, true, true);
+          spriteData.phaserSprite.destroy();
+        }
+        if (spriteData.flashSprite) {
+          spriteData.flashSprite.destroy();
+        }
+      }
       this.ecs.destroyEntity(xpId);
     });
   }

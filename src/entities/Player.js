@@ -7,6 +7,7 @@ import Health from '../components/Health.js';
 import Shooting from '../components/Shooting.js';
 import { createPlayerXP } from '../components/PlayerXP.js';
 import SpeedUpgrade from '../components/upgrades/SpeedUpgrade.js';
+import MagnetUpgrade from '../components/upgrades/MagnetUpgrade.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
@@ -34,6 +35,7 @@ export default function createPlayer(ecs, scene, x, y) {
   ecs.addComponent(playerId, 'shooting', new Shooting(200)); // Cooldown of 200ms
   ecs.addComponent(playerId, 'playerXP', createPlayerXP()); // Track XP and level
   ecs.addComponent(playerId, 'speedUpgrade', new SpeedUpgrade()); // Track speed upgrades
+  ecs.addComponent(playerId, 'magnetUpgrade', new MagnetUpgrade()); // Track magnet upgrades
   
   ecs.initEntity(playerId);
   return playerId;

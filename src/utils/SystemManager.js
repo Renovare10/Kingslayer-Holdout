@@ -10,14 +10,16 @@ import SpawnSystem from '../systems/SpawnSystem.js';
 import LifecycleSystem from '../systems/LifecycleSystem.js';
 import XPSystem from '../systems/XPSystem.js';
 import PlayerUpgradeSystem from '../systems/PlayerUpgradeSystem.js';
+import MagnetSystem from '../systems/MagnetSystem.js';
 
 export default class SystemManager {
-  constructor(scene, ecs, zombieGroup, bulletGroup, gameState) {
+  constructor(scene, ecs, zombieGroup, bulletGroup, gameState, physicsManager) {
     this.scene = scene;
     this.ecs = ecs;
     this.zombieGroup = zombieGroup;
     this.bulletGroup = bulletGroup;
     this.gameState = gameState;
+    this.physicsManager = physicsManager;
   }
 
   initializeSystems() {
@@ -33,5 +35,6 @@ export default class SystemManager {
     this.ecs.addSystem(new LifecycleSystem(this.scene, this.zombieGroup, this.gameState));
     this.ecs.addSystem(new XPSystem(this.scene));
     this.ecs.addSystem(new PlayerUpgradeSystem(this.scene, this.ecs));
+    this.ecs.addSystem(new MagnetSystem(this.scene, this.physicsManager));
   }
 }

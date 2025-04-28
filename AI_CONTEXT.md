@@ -9,6 +9,7 @@ MainScene.js: Game logic, creates player (red box), initializes systems via Syst
 GameOverScene.js: Displays game over UI (white "Game Over" text, clickable restart square) using GameOverUIManager, stops itself and triggers MainScene restart via SceneManager.
 HUDScene.js: Displays player HUD, initializes HealthUIManager for health display and XPUIManager for XP/level display, runs in parallel with MainScene.
 UpgradeScene.js: Launched on level-up via levelChanged event, pauses MainScene, displays "Choose Your Power-Up" (50px Arial, white, y = height / 3) and a single "Speed Boost" option (50x50 red circle, 20px Arial title, centered at x = width / 2, y = height * 2/3) on a semi-transparent black background (0x000000, alpha 0.7). Skips UI and resumes MainScene if SpeedUpgrade.count is 3 (max stacks). Resumes MainScene and stops itself on click or Space key press. Initialized with ecs data.
+UpgradeScene.js: Launched on level-up via levelChanged event, pauses MainScene, displays "Choose Your Power-Up" (50px Arial, white, y = height / 3) and up to two options (Speed Boost: 50x50 red circle, XP Magnet: 50x50 blue circle, 20px Arial titles, centered with 150px spacing at y = height * 2/3) on a semi-transparent black background (0x000000, alpha 0.7). Skips UI and resumes MainScene if both SpeedUpgrade and MagnetUpgrade are maxed (3 stacks). Applies selected upgrade (speedUpgrade or magnetUpgrade) on click, resumes MainScene and stops itself on click or Space key press. Initialized with ecs data.
 
 
 src/components/:
@@ -28,6 +29,7 @@ Lifecycle.js: Defines lifecycle settings (despawnDistance, respawnDistance, maxZ
 XP.js: Defines XP entities dropped by zombies (value, createdAt, lifespan).
 PlayerXP.js: Tracks player XP and level (xp, level, xpToNextLevel), includes addXP method for level-up logic.
 SpeedUpgrade.js: Stores speed upgrade data for the player (count: 0–3, maxStacks: 3, speedBoost: 5 for +5 speed per stack). Located in src/components/upgrades.js
+MagnetUpgrade.js: Stores magnet upgrade data for the player (count: 0–3, maxStacks: 3, radius: 150 per stack for 150/300/450, maxSpeed: 200 for XP pull speed). Located in src/components/upgrades.
 
 
 src/systems/:
@@ -44,10 +46,11 @@ LifecycleSystem.js: Manages zombie despawning and respawning for entities with L
 XPSystem.js: Manages XP entity despawn (10s lifespan).
 PlayerMovementSystem.js: Moves player with WASD (base speed 100, increased by speedUpgrade.speedBoost * speedUpgrade.count, e.g., 115 with 3 stacks). Normalizes diagonal movement, syncs physics body with Position component.
 PlayerUpgradeSystem.js: Listens for levelChanged events, launches UpgradeScene with ecs data. No continuous updates.
+MagnetSystem.js: Manages XP magnet effect for players with MagnetUpgrade. Uses ECS XP entities (xp, sprite, position, physicsBody) to apply piecewise smooth pull velocity (outer third ~30, middle third ~100, inner third ~150–200 for radius 450), syncing lavender flash sprite with main XP sprite.
 
 
 src/entities/:
-Player.js: Creates player with red box (150x150), centered physics, adds Shooting and PlayerXP components.
+Player.js: Creates player at (500, 500) with 150x150 red box, centered physics (setOrigin(0.5), setCircle(75)). Rotates to mouse, moves with WASD (base speed 100, +5 per speedUpgrade.count, max 115). Shoots bullets (speed 3500, 200ms cooldown). Collides with static red box, zombies, XP circles. Has PlayerXP for XP tracking (resets to 0 on level-up, thresholds: 100/150/200...), SpeedUpgrade for speed boosts, and MagnetUpgrade for XP pull (radius 150/300/450 with zoned speeds).
 Zombie.js: Creates standard zombie with zombie.png, movement, square collider (250x250).
 FastZombie.js: Creates fast zombie with zombie.png, smaller size (100x100), faster speed (120), dark yellow tint (0xCCCC00).
 Bullet.js: Creates bullet with position, angle, velocity, lifespan.

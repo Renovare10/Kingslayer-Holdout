@@ -24,7 +24,7 @@ export default class MainScene extends Phaser.Scene {
     const physicsManager = new PhysicsManager(this, this.ecs);
     physicsManager.initialize();
 
-    const systemManager = new SystemManager(this, this.ecs, physicsManager.getZombieGroup(), physicsManager.getBulletGroup(), this.gameState);
+    const systemManager = new SystemManager(this, this.ecs, physicsManager.getZombieGroup(), physicsManager.getBulletGroup(), this.gameState, physicsManager);
     systemManager.initializeSystems();
 
     const spawnerId = this.ecs.createEntity();
