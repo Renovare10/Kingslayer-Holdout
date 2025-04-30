@@ -55,6 +55,11 @@ export default class MainScene extends Phaser.Scene {
       this.isRestarting = false;
       this.gameState = new GameState();
     });
+
+    // Launch PauseScene on Esc key press
+    this.input.keyboard.on('keydown-ESC', () => {
+      this.scene.launch('PauseScene', { ecs: this.ecs, sceneManager: this.sceneManager });
+    });
   }
 
   update() {
