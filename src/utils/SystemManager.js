@@ -1,7 +1,7 @@
 import RenderSystem from '../systems/RenderSystem.js';
 import RotateToMouseSystem from '../systems/RotateToMouseSystem.js';
 import PlayerMovementSystem from '../systems/PlayerMovementSystem.js';
-import PlayerShootingSystem from '../systems/PlayerShootingSystem.js';
+import AutoShootingSystem from '../systems/AutoShootingSystem.js';
 import BulletSystem from '../systems/BulletSystem.js';
 import HealthSystem from '../systems/HealthSystem.js';
 import FlashSystem from '../systems/FlashSystem.js';
@@ -11,6 +11,7 @@ import LifecycleSystem from '../systems/LifecycleSystem.js';
 import XPSystem from '../systems/XPSystem.js';
 import PlayerUpgradeSystem from '../systems/PlayerUpgradeSystem.js';
 import MagnetSystem from '../systems/MagnetSystem.js';
+import TargetLockSystem from '../systems/TargetLockSystem.js';
 
 export default class SystemManager {
   constructor(scene, ecs, zombieGroup, bulletGroup, gameState, physicsManager) {
@@ -26,7 +27,8 @@ export default class SystemManager {
     this.ecs.addSystem(new RenderSystem(this.scene));
     this.ecs.addSystem(new RotateToMouseSystem(this.scene));
     this.ecs.addSystem(new PlayerMovementSystem(this.scene));
-    this.ecs.addSystem(new PlayerShootingSystem(this.scene, this.bulletGroup));
+    this.ecs.addSystem(new AutoShootingSystem(this.scene, this.bulletGroup));
+    this.ecs.addSystem(new TargetLockSystem(this.scene));
     this.ecs.addSystem(new BulletSystem(this.scene, this.bulletGroup));
     this.ecs.addSystem(new HealthSystem(this.scene, this.zombieGroup));
     this.ecs.addSystem(new FlashSystem(this.scene));
