@@ -8,6 +8,7 @@ import Shooting from '../components/Shooting.js';
 import { createPlayerXP } from '../components/PlayerXP.js';
 import SpeedUpgrade from '../components/upgrades/SpeedUpgrade.js';
 import MagnetUpgrade from '../components/upgrades/MagnetUpgrade.js';
+import AutoTarget from '../components/AutoTarget.js';
 
 export default function createPlayer(ecs, scene, x, y) {
   const playerId = ecs.createEntity();
@@ -36,6 +37,7 @@ export default function createPlayer(ecs, scene, x, y) {
   ecs.addComponent(playerId, 'playerXP', createPlayerXP()); // Track XP and level
   ecs.addComponent(playerId, 'speedUpgrade', new SpeedUpgrade()); // Track speed upgrades
   ecs.addComponent(playerId, 'magnetUpgrade', new MagnetUpgrade()); // Track magnet upgrades
+  ecs.addComponent(playerId, 'autoTarget', new AutoTarget(0)); // For auto-aiming
   
   ecs.initEntity(playerId);
   return playerId;
