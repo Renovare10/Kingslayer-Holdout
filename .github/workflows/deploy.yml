@@ -21,13 +21,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # Caching removed to prevent optional dependency corruption
+          # cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Clean install dependencies
+        run: |
+          echo "Removing node_modules and package-lock.json to ensure clean install..."
+          rm -rf node_modules package-lock.json
+          echo "Running npm ci for reproducible install..."
+          npm ci
 
       - name: Build Phaser2D (static export)
-        run: npm run build:static  # assumes script copies index.html + assets to ./dist
+        run: npm run build:static
+
+      - name: Verify build output
+        run: |
+          echo "Checking if dist/ exists..."
+          ls -la dist/ || echo "dist/ not found or empty!"
+          [ -f "dist/index.html" ] && echo "index.html found!" || echo "index.html missing!"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -38,17 +49,22 @@ jobs:
 
       - name: Deploy to S3
         run: |
+          echo "Deploying to s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/"
           aws s3 sync ./dist/ s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/ \
             --delete \
-            --cache-control "public, max-age=60, must-revalidate"
+            --cache-control "public, max-age=60, must-revalidate" \
+            --acl public-read
 
       - name: Invalidate CloudFront Cache
         if: env.CF_DISTRIBUTION_ID != ''
         run: |
+          echo "Invalidating CloudFront cache for /${{ env.S3_PREFIX }}/*"
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CF_DISTRIBUTION_ID }} \
             --paths "/${{ env.S3_PREFIX }}/*"
 
       - name: Success
         run: |
-          echo "Deployed: https://kingslayer-holdout.chadmurchison.com/"
+          echo "Deployed successfully!"
+          echo "Live URL: https://kingslayer-holdout.chadmurchison.com/"
+          echo "GitHub Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
