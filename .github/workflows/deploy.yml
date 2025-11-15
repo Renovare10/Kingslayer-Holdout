@@ -21,24 +21,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # Caching removed to prevent optional dependency corruption
-          # cache: 'npm'
+          # No caching — prevents optional dep corruption
 
       - name: Clean install dependencies
         run: |
-          echo "Removing node_modules and package-lock.json to ensure clean install..."
-          rm -rf node_modules package-lock.json
-          echo "Running npm ci for reproducible install..."
-          npm ci
+          echo "Cleaning node_modules for fresh install..."
+          rm -rf node_modules
+          
+          # Only delete package-lock.json if you want to regenerate it
+          # rm -f package-lock.json
+          
+          echo "Installing dependencies..."
+          npm install
 
       - name: Build Phaser2D (static export)
         run: npm run build:static
 
       - name: Verify build output
         run: |
-          echo "Checking if dist/ exists..."
-          ls -la dist/ || echo "dist/ not found or empty!"
-          [ -f "dist/index.html" ] && echo "index.html found!" || echo "index.html missing!"
+          echo "Listing dist/ contents:"
+          ls -la dist/ || echo "dist/ not found!"
+          [ -f "dist/index.html" ] && echo "index.html found!" || exit 1
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -58,7 +61,7 @@ jobs:
       - name: Invalidate CloudFront Cache
         if: env.CF_DISTRIBUTION_ID != ''
         run: |
-          echo "Invalidating CloudFront cache for /${{ env.S3_PREFIX }}/*"
+          echo "Invalidating CloudFront cache..."
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CF_DISTRIBUTION_ID }} \
             --paths "/${{ env.S3_PREFIX }}/*"
@@ -66,5 +69,4 @@ jobs:
       - name: Success
         run: |
           echo "Deployed successfully!"
-          echo "Live URL: https://kingslayer-holdout.chadmurchison.com/"
-          echo "GitHub Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "URL: https://kingslayer-holdout.chadmurchison.com/"
