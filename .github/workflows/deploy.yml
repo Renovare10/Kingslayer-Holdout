@@ -21,17 +21,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # No caching — prevents optional dep corruption
+          # No cache — prevents corruption
 
       - name: Clean install dependencies
         run: |
-          echo "Cleaning node_modules for fresh install..."
-          rm -rf node_modules
-          
-          # Only delete package-lock.json if you want to regenerate it
-          # rm -f package-lock.json
-          
-          echo "Installing dependencies..."
+          echo "Removing node_modules and package-lock.json..."
+          rm -rf node_modules package-lock.json
+          echo "Installing fresh dependencies..."
           npm install
 
       - name: Build Phaser2D (static export)
@@ -39,9 +35,9 @@ jobs:
 
       - name: Verify build output
         run: |
-          echo "Listing dist/ contents:"
-          ls -la dist/ || echo "dist/ not found!"
-          [ -f "dist/index.html" ] && echo "index.html found!" || exit 1
+          echo "dist/ contents:"
+          ls -la dist/
+          [ -f "dist/index.html" ] && echo "Build OK!" || (echo "Build failed!" && exit 1)
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -52,7 +48,6 @@ jobs:
 
       - name: Deploy to S3
         run: |
-          echo "Deploying to s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/"
           aws s3 sync ./dist/ s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/ \
             --delete \
             --cache-control "public, max-age=60, must-revalidate" \
@@ -61,12 +56,10 @@ jobs:
       - name: Invalidate CloudFront Cache
         if: env.CF_DISTRIBUTION_ID != ''
         run: |
-          echo "Invalidating CloudFront cache..."
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CF_DISTRIBUTION_ID }} \
             --paths "/${{ env.S3_PREFIX }}/*"
 
       - name: Success
         run: |
-          echo "Deployed successfully!"
-          echo "URL: https://kingslayer-holdout.chadmurchison.com/"
+          echo "Deployed: https://kingslayer-holdout.chadmurchison.com/"
