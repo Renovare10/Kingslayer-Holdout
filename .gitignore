@@ -33,9 +33,3 @@ Thumbs.db
 
 # Phaser-specific (if caching assets locally)
 *.cache
-package-lock.json
-node_modules/.package-lock.json
-
-# Local Netlify folder
-.netlify
-package-lock.json
