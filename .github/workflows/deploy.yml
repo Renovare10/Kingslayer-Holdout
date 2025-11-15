@@ -20,11 +20,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'          # now works with package-lock.json
+          cache: 'npm'
 
-      - run: npm ci             # clean install from lockfile
+      - run: npm ci
 
-      - run: npm run build      # → creates ./dist
+      - run: npm run build
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -32,12 +32,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
 
-      - run: |
+      - name: Deploy to S3
+        run: |
           aws s3 sync ./dist/ s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/ \
             --delete \
             --cache-control "public, max-age=60, must-revalidate"
 
-      - if: env.CF_DISTRIBUTION_ID != ''
+      - name: Invalidate CloudFront Cache
+        if: env.CF_DISTRIBUTION_ID != ''
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ env.CF_DISTRIBUTION_ID }} \
